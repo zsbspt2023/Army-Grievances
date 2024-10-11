@@ -1,0 +1,237 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@model ArmyGrievances.Models.GrievanceModal
+@{
+    Layout = "~/Views/Shared/_VerticalLayout1.cshtml";
+    ViewBag.Title = ViewBag.PageHeading;
+}
+<link rel="stylesheet" href="~/css/jquery.datetimepicker.min.css" />
+<style>
+    .lbllarge {
+        font-size: 14.5px;
+    }
+
+    .txtRequired {
+        border-left: 5px solid blue !important;
+    }
+
+    .schemesMng input[type="text"] {
+        max-width: 100%;
+        width: 27rem;
+    }
+
+    select {
+        max-width: 430px !important;
+    }
+
+    .select2-container {
+        width: 430px !important;
+    }
+
+    .xdsoft_datetimepicker .xdsoft_month {
+        text-align: left !important;
+    }
+
+    .xdsoft_datetimepicker .xdsoft_label i {
+        display: contents
+    }
+
+    .xdsoft_datetimepicker .xdsoft_timepicker {
+        width: 70px !important;
+    }
+
+    .FitCover {
+        object-fit: cover;
+        max-width: 250px;
+        max-height: 195px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .2), 0 6px 20px 0 rgba(0, 0, 0, .19);
+        border-radius: 5px
+    }
+
+    .file-up {
+        position: absolute;
+        height: calc(100% + 43px);
+        width: 100%;
+    }
+
+    .jcrop-holder .img-fluid {
+        background: #FFF !important;
+    }
+</style>
+
+<form class="wrapper" action="/Grievance/MngSubmit" method="post" enctype="multipart/form-data" style="padding: 5px;">
+    <div class="modal-header with-border" style="padding:0">
+        <h2 class="box-title">@ViewBag.PageHeading</h2>
+        <div>
+            <a class="brdr-1 btn-sm btn" style="padding: 5.3px 10px;" onclick="goBack();">Return</a>
+        </div>
+    </div>
+    <div class="wrapper">
+        <div class="row">
+            <div class="col-lg-12 schemesMng">
+                <div class="text-center">
+                    <div class="card" style="display:flex;width:100%!important">
+                        <input type="hidden" class="form-control" name="Id" value="@Model.Id" />
+
+                        <div class="row p-2">
+                            <div class="row">
+                               <div class="col-md-3" style="text-align: right;">
+                                    <label class=" lbllarge mt-1 me-1 p-0" for="Individual_Particular" >Particular of Individual:</label>
+                               </div>
+                                <input type="text" class="txtRequired form-control"  id="Individual_Particular" name="Individual_Particular" value="@Model.Individual_Particular" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align:right;">
+                                    <label class=" lbllarge mt-1 me-1">Grievance Recept Date:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired datetimepicker" id="Grievance_ReceptDate" onchange="OnchangeDate();" name="Grievance_ReceptDate" value="@Model.Grievance_ReceptDate" placeholder="DD/MM/YYYY" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align:right;">
+                                    <label class=" lbllarge mt-1 me-1">Grienvance Subject:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="Grienvance_Subject" name="Grienvance_Subject" value="@Model.Grienvance_Subject" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align: right;">
+                                    <label class=" lbllarge mt-1 me-1 p-0">Sent to Whom:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="Sent_Area" name="Sent_Area" value="@Model.Sent_Area" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align: right;">
+                                    <label class=" lbllarge mt-1 me-1 p-0">Regt. Record:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="Regt_Record" name="Regt_Record" value="@Model.Regt_Record" />
+
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align: right;">
+                                    <label class=" lbllarge mt-1 me-1">ZSB Memo No:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="ZSB_MemoNo" name="ZSB_MemoNo" value="@Model.ZSB_MemoNo" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align: right;">
+                                    <label class=" lbllarge mt-1 me-1">ZSB Memo Date:</label>
+                                </div>
+                                <input class="form-control txtRequired datetimepicker" name="ZSB_MemoDate" type="text" id="ZSB_MemoDate" onchange="OnchangeDate();" value="@Model.ZSB_MemoDate" placeholder="DD/MM/YYYY">
+                            </div>
+                            <div class="mt-save">
+                                <button id="EditSave" type="submit" class="btn btn-sm brdr-1 " style="color: white; border: none; background-color: orange;box-shadow:none" onclick="return validateInputs(this);">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script src="~/Scripts/jquery.datetimepicker.full.min.js"></script>
+<script src="~/Scripts/jquery-moment.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        debugger;
+        $(".datetimepicker").datetimepicker({ format: 'd/m/Y', formatDate: 'd/m/Y' });
+        $('.xdsoft_timepicker').hide();
+        function matchStart(term, text) {
+            if (text.toUpperCase().indexOf(term.toUpperCase()) > -1) {
+                return true;
+            }
+            return false;
+        }
+    });
+
+</script>
+<script>
+    function reset() {
+        $('#Individual_Particular').css('background-color', 'white');
+        $('#Grievance_ReceptDate').css('background-color', 'white');
+        $('#Grienvance_Subject').css('background-color', 'white');
+        $('#Sent_Area').css('background-color', 'white');
+        $('#Regt_Record').css('background-color', 'white');
+        $('#ZSB_MemoNo').css('background-color', 'white');
+        $('#ZSB_MemoDate').css('background-color', 'white');
+       
+    }
+
+    function validateInputs(e) {
+        reset();
+        var Individual_Particular = $.trim($('#Individual_Particular').val());
+        var Grievance_ReceptDate = $.trim($('#Grievance_ReceptDate').val());
+        var Grienvance_Subject = $.trim($('#Grienvance_Subject').val());
+        var Sent_Area = $.trim($('#Sent_Area').val());
+        var Regt_Record = $.trim($('#Regt_Record').val());
+        var ZSB_MemoNo = $.trim($('#ZSB_MemoNo').val());
+        var ZSB_MemoDate = $.trim($('#ZSB_MemoDate').val());
+        var error = "";
+        if (Individual_Particular == "") {
+            error += "&#9679 Enter Particular of Individual <br>";
+            $('#Individual_Particular').css('background-color', 'yellow');
+        }
+        if (Grievance_ReceptDate == "") {
+            error += "&#9679 Enter Grievance Recept Date. <br>";
+            $('#Grievance_ReceptDate').css('background-color', 'yellow');
+        }
+        if (Grienvance_Subject == "") {
+            error += "&#9679 Enter  Grienvance Subject <br>";
+            $('#Grienvance_Subject').css('background-color', 'yellow');
+        }
+
+        if (Sent_Area == "") {
+            error += "&#9679 Enter send to whom. <br>";
+            $('#Sent_Area').css('background-color', 'yellow');
+        }
+
+        if (Regt_Record == "") {
+            error += "&#9679 Enter Regt. Record <br>";
+            $("#Regt_Record").css('background-color', 'yellow');
+        }
+        if (ZSB_MemoNo == "") {
+            error += "&#9679 Enter ZSB Memo No.<br>";
+            $('#ZSB_MemoNo').css('background-color', 'yellow');
+        }
+        if (ZSB_MemoDate == "") {
+            error += "&#9679 Enter ZSB Memo Date <br>";
+            $('#ZSB_MemoDate').css('background-color', 'yellow');
+        }
+        
+        if (error != "") {
+            var lines = error.split("<br>").length;
+            if (lines > 2) {
+                var errormsg = "Please correct all issues before Save <br>";
+                errormsg += error;
+                alertify.alert(errormsg);
+            }
+            else
+                alertify.alert(error);
+            return false;
+        }
+    }
+</script>
+
+
+<script>
+    function OnchangeDate() {
+        $('.xdsoft_datetimepicker.xdsoft_noselect.xdsoft_').hide();
+    }
+
+    function goBack() {
+        window.history.back();
+    }
+</script>
+@if (ViewData["Message"] != null)
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            alertify.alert("@ViewData["Message"]");
+            var alertID = document.getElementById('alertify-ok'); if (alertID) {
+                setTimeout(function () { alertID.click(); }, 5000);
+            }
+        });
+    </script>
+}
+
+

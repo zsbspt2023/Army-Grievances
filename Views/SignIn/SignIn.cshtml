@@ -1,0 +1,145 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@model ArmyGrievances.Models.UserModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Sign In";
+}
+
+<style>
+    .login .form-group {
+        width: 350px;
+    }
+
+    .btn:hover {
+        color: #fff;
+    }
+
+    input[type=text], input[type=password], input[type=submit] {
+        font-size: 1rem;
+        line-height: inherit;
+        padding: .375rem .75rem
+    }
+
+    .txtRequired {
+        border-left: 5px solid blue !important;
+    }
+
+    .single-line {
+        max-width: 100%;
+    }
+    .main-wrap-b {
+        background: #001f3f;
+    }
+
+    #SignInButton {
+        display: none;
+    }
+</style>
+<section class="login" style="padding:44px !important">
+    <div class="wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="form-wrap card">
+                    <img src="~/images/SliderImages/NIC-Logo1.png" alt="" style="text-align: center;width: 400px;height: 80px"><br />
+                    <H2>Sign In</H2>
+                    @using (Html.BeginForm("LoginSubmit", "SignIn", FormMethod.Post, new { id = "LoginSubmitForm" }))
+                    {
+                        <div class="form-group" style="width:100% !important">
+                            <label id="user_name_lable" style="color: black;"><b>UserName:</b> </label>
+                            @Html.EditorFor(model => model.UserName, new { htmlAttributes = new { @class = "form-control txtRequired", id = "id_username", @style = "max-width: 382px", maxlength = "10",placeholder = "Enter UserName" } })
+                        </div>
+                        @* @onkeyup= "if (/\\D/g.test(this.value)) this.value = this.value.replace(/\\D/g,'')" *@
+                        @* <div class="form-group my-3  position-relative password" id="formpassword1" style="height: 44px;width:382px;">
+                            <div>
+                                <label style="color: black;"><b>Password:</b></label>
+                                @Html.EditorFor(model => model.Password, new { htmlAttributes = new { type = "password", @class = "form-control txtRequired", id = "id_password", @style = "max-width: 382px", placeholder = "Enter Password" } })
+                            </div>
+                            <div style="position: absolute;right:8px;bottom: -3px;cursor:pointer;">
+                                <img src="~/images/icons/eye.gif" id="PortolotogglePassword" alt="eye" />
+                            </div>
+                        </div> *@
+                        <div class="row" style="position:relative;right:125px">
+                            <div class="col-lg-6" style="width: 10%; padding-left: 34%;padding-top:1px;">
+                                <input type="checkbox" value="remember-me" id="remember_me">
+                            </div>
+
+                            <div class="col-lg-6">
+                                <label> <b>Remember Me</b></label>
+                            </div>
+                        </div>
+                        
+                            <button type="submit" id="login" class="brdr-1 btn-sm" style=" margin-top: 2px;font-weight:700;width:382px;border-radius:18px!important">
+                                Sign In
+                            </button>
+                    }
+                    @* <div class="justify-content-center d-flex flex-wrap p-2">
+                        <a href="@Url.Action("ResetPassword")" id="cmdGetHelp" class="m-2 mt-0 mb-0"><b>Forgot Password?</b></a>
+                        @*         <a href="~/Home/Register">Create Account</a> 
+                    </div>
+                    <div class="form-group help" style="display: none; height: 100px !important;">
+                        <div class="col-xs-12 mt-1 mb-2">
+                            <label class="mb-2 mb-lg-0" style="color:black"><b>Registered Mobile Number:</b></label>
+                            <input type="text" id="txtPhoneNo" name="txtEmailAddressNeedHelp" style=" border: 1px solid #ced4da; border-radius: 0.25rem; max-width: 1000px; width: 355px;" class="txtRequired Font11" value="" tabindex="0" maxlength="10" , onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')" placeholder="Enter Registered Mobile Number" />
+                        </div>
+                        <button id="NeedHelpProceed1" type="button" class="brdr-1 btn-sm" style="background-color: orange; color: white;">Send OTP</button>
+                    </div> *@
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript">
+    function preventBack() {
+        window.history.forward();
+    }
+    setTimeout("preventBack()", 0);
+    window.onunload = function () { null };
+</script>
+
+
+<script>
+    $(document).ready(function () {
+        $(function () {
+            // var status = JSON.parse(@Html.Raw(Json.Serialize(@ViewData["Emptylocal"])));
+            // if (status != null) {
+            //     localStorage.usrname = '';
+            //     localStorage.pass = '';
+            //     localStorage.chkbx = '';
+            //     localStorage.clear();
+            // }
+            // else
+            if (localStorage.chkbx && localStorage.chkbx != '') {
+
+                $('#remember_me').attr('checked', 'checked');
+                var formPassCode = $('#formpassCode').is(":visible");
+                if (!formPassCode) {
+                    $('#id_username').val(localStorage.usrname);
+                    //$('#id_password').val(localStorage.pass);
+                }
+                else {
+                    $('#user_name_lable').text("Email Address:");
+                }
+
+            } else {
+                // $('#remember_me').removeAttr('checked');
+                $('#id_username').val('');
+                $('#id_password').val('');
+            }
+            $('#remember_me').click(function () {
+                if ($('#remember_me').is(':checked')) {
+                    // save username and password
+                    localStorage.usrname = $('#id_username').val();
+                    localStorage.pass = "1234";
+                    localStorage.chkbx = $('#remember_me').val();
+                } else {
+                    localStorage.usrname = '';
+                    localStorage.pass = '';
+                    localStorage.chkbx = '';
+                }
+            });
+        });
+    });
+</script>
+<script type="text/javascript" src="~/Scripts/SignIn.js"></script>

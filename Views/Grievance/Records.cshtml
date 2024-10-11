@@ -1,0 +1,516 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@model ArmyGrievances.Models.GrievanceModal
+@{
+    ViewBag.Title = "Grievance Records";
+    Layout = "~/Views/Shared/_VerticalLayout1.cshtml";
+}
+
+<script>
+    function GetDetails(id) {
+        window.location.href = "/Grievance/EditGrievance?id=" + id;
+    }
+
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var primarykey = [];
+        $("#select-all").click(function (event) {
+            if (this.checked) {
+                primarykey.length = 0;
+                // Iterate each checkbox
+                $(':checkbox').each(function () {
+                    this.checked = true;
+                    if (this.value != "on") {
+                        primarykey.push(this.value);
+                    }
+                });
+            } else {
+                $(':checkbox').each(function () {
+                    this.checked = false;
+                });
+            }
+        });
+        var checkids = "";
+    });
+</script>
+
+<script>
+    function Openform() {
+        $('#Uploadfile').modal('show');
+        $('.modal-content').draggable();
+    }
+    function alertMe() {
+        var checklist = [];
+        $(':checkbox:checked').each(function () {
+            if (this.value != "on")
+                checklist.push(this.value);
+        });
+        var ids = checklist.join(", ");
+        var arrayIds = ids.split(',');
+        var count = arrayIds.length;
+        var statement = count == 1 ? "row":"rows";
+
+        if (ids == "") {
+            alertify.alert("Select any row and try again");
+            var alertID = document.getElementById('alertify-ok'); if (alertID) {
+                setTimeout(function () { alertID.click(); }, 5000);
+            }
+            return false;
+        }
+        else {
+            alertify.confirm('Confirm delete selected ' +statement+ '?', function (e) {
+                if (e) {
+                    $.ajax({
+                        url: "/Grievance/DeleteRecords",
+                        data: { ids: ids },
+                        success: function (res) {
+                            //console.log(res);
+                            if (res == "true") {
+                                window.location.reload();
+                            }
+                            else {
+                                alertify.alert('Select one or more rows and try again');
+                                var alertID = document.getElementById("alertify-ok");
+                                setTimeout(function () {
+                                    if (alertID) {
+                                        alertID.click();
+                                    }
+                                }, 5000)
+                            }
+                        }
+                    });
+
+                }
+            });
+            return false;
+        }
+    }
+</script>
+
+<style>
+    .form-control:disabled, .form-control[readonly] {
+        background-color: #e9ecef0f;
+        opacity: 1;
+    }
+
+    .mt-upload {
+        margin-left: 315px;
+        margin-top: -33px;
+    }
+
+    input[type=text], input[type=number], select {
+        font-size: 16px !important;
+        height: 33px !important;
+        padding: .375rem 0.375rem .375rem .75rem;
+    }
+
+    .modal-header.with-border {
+        background: #ADD8E6;
+        padding: 5px;
+        margin: 10px;
+        border: 0;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    .modal-content {
+        border-radius: 1px;
+    }
+
+    .pdl-1 {
+        padding-left: 15px;
+    }
+
+    thead {
+        background-color: #6e6c6c;
+    }
+
+    th a {
+        color: white;
+    }
+
+    a:hover {
+        color: darkorange;
+    }
+
+    h3 {
+        color: #474747;
+        font-size: 20px;
+        font-weight: 500;
+    }
+
+    thead {
+        position: sticky;
+        top: 0;
+    }
+
+    .scroll-table-ov {
+        height: 360px;
+        overflow: auto;
+        overflow-x: scroll;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        color: white;
+    }
+
+    .title {
+        color: #00008b !important;
+        font-weight: bold !important;
+        margin-bottom: 8px !important;
+        font-size: 14px !important;
+    }
+
+    .modalBlueHeaders {
+        padding: 5px;
+        background-color: #ADD8E6;
+        border-radius: 0;
+    }
+
+    .lblTitle {
+        padding: 4px;
+        font-size: 19px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .form-select {
+        width: 20%;
+        display: inline;
+    }
+</style>
+<section class="task-list-form center">
+    <div class="wrapper">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="box box-primary control-icons pt-0">
+                    <form action="~/Grievance/Records" method="post" enctype="multipart/form-data">
+                        <div class="box-header ">
+                            <h2 class="box-title">Grievance Records</h2>
+                            <a onclick="ExportToExcelLookUp()" title="Download Excel">
+                                <img src="~/images/icons/excel_icon.png" class="nav-icons-port" />
+                            </a>
+                            <a href="~/Grievance/Records"><img src="~/images/icons/Refresh.png" class="nav-icons-port" title="Reset" /></a>
+                            <button type="submit" value="Search" title="Search" style="border-color: white;border: none;background:none">
+                                <img src="~/images/icons/search.png" class="nav-icons-port" />
+                            </button>
+                            <div class="controls">
+                                @if (HttpContextAccessor.HttpContext?.Session.GetInt32("IsAdmin") == 1 || HttpContextAccessor.HttpContext?.Session.GetInt32("IsSuperAdmin") == 1)
+                                {
+                                    <button type="button" value="" class="brdr-1 btn-sm" data-toggle="modal" data-target="#Uploadfile" onclick="Openform();">Upload File</button>
+                                    <button type="button" value="Delete" class="brdr-1 btn-sm" onclick="return alertMe();">Delete</button>
+                                }
+                                <a id="btnBack" class="brdr-1 btn-sm" href="javascript:void(0);" onclick="goBack()"> Return</a>
+                            </div>
+                        </div>
+                        <div class="control-icons" style="padding:0;">
+                            <div class="row">
+                                <div class="col-6">
+                                    <label style="font-weight:bold; font-size:15px;">Recept Year/Month:</label><br />
+                                    <select class="form-select" id="dropDownYear1" name="Year" onchange="dropDownYear(0);">
+                                        <option value="0">-Year-</option>
+                                    </select>
+                                    <select class="form-select" id="dropDownYearMonth" name="Month">
+                                        <option value="0">-Month-</option>
+                                    </select>
+                                </div>
+                                <div class="col-6" style="padding-top:21px!important;">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="col-lg-12" style="display: flex; justify-content: center;">
+
+                        <div class="card">
+                            <button id="slideLeft" style="position:absolute; left:4px;padding:0" class="btn btm-sm" title="Scroll Left" type="button"><img src="~/images/icons/leftarrow.png" width="32" height="32" /></button>
+                            <button id="slideRight" style="position:absolute;right:4px;padding:0" class="btn btm-sm" title="Scroll Right" type="button"><img src="~/images/icons/rightarrow.png" width="32" height="32" /></button>
+                            <div class="scroll-table-ov">
+                                <table class="table table-striped table-bordered table-hover foo" style="width:200%;table-layout: fixed; border-radius:4px;">
+                                    <thead>
+                                        <tr class="table-hd">
+                                            <th style="width:2%!important"><input type="checkbox" name="select-all" onchange="Checkboxchange(this);" id="select-all" /></th>
+                                            <th style="width:3%!important">S.No</th>
+                                            <th style="width:7%!important">Particular of Individual</th>
+                                            <th style="width:9%!important">Grievance Recept Date</th>
+                                            <th style="width:10%!important">Grienvance Subject</th>
+                                            <th style="width:10%!important">Sent to Whom</th>
+                                            <th style="width:5%!important">Regt. Record</th>
+                                            <th style="width:7%!important">ZSB Memo No.</th>
+                                            <th style="width:6%!important">ZSB Memo Date</th>
+                                            <th style="text-align: center; width: 4%">Edit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="myTable">
+                                        @if (Model.grievances != null && Model.grievances.Count > 0)
+                                        {
+                                            foreach (var item in Model.grievances)
+                                            {
+                                                <tr>
+                                                    <td> <input type="checkbox" name="ID" value="@item.Id" class="custom-checkbox chkCheckBoxId" /> </td>
+                                                    <td>@item.S_No</td>
+                                                    <td>@item.Individual_Particular</td>
+                                                    <td>@item.Grievance_ReceptDate</td>
+                                                    <td>@item.Grienvance_Subject</td>
+                                                    <td>@item.Sent_Area</td>
+                                                    <td>@item.Regt_Record</td>
+                                                    <td>@item.ZSB_MemoNo</td>
+                                                    <td>@item.ZSB_MemoDate</td>
+                                                    <td style="text-align:center;"><a href="JavaScript:void(0);" onclick="GetDetails(@item.Id)" title="Edit"><img alt="Qries" src="~/images/icons/EditIcon.png" style="width: 25px; height:25px;"> </a> </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr><td colspan="10" style="text-align:center"><b>No Record Found</b></td></tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            @if (Model.grievances != null)
+                            {
+                                @if (Model.grievances.Count >= 25)
+                                {
+                                    <div class="row">
+                                        <div class="col-md-12 d-flex justify-content-center" style="text-align:center;">
+                                            <ul class="pagination pagination-lg pager" id="myPager"></ul>
+                                            <div style="display:flex; flex-direction:column; justify-content:center;margin-left:10px;"><span id="pagedata" style="display:none;"></span></div>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div id="Uploadfile" class="modal fade" role="dialog" tabindex="-1" aria-labelledby="modalHeading" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header with-border">
+                <h5 class="modal-title box-title" id="modalHeading">Attach Excel File</h5>
+                @* <a href="https://snp-workstatus-uploadfiles-buket.s3.ap-south-1.amazonaws.com/Dev_SampleList.xlsx" title="Download Excel Format" style="position: relative;right: 60px;">
+                <img alt="close" src="~/images/icons/downloadIcon.png" width="40" height="32" />
+                </a> *@
+                <div class="pull-left">
+
+                    <button id="closeModalPopup" type="button" style="border: 0;background: 0;text-align: right;" data-bs-dismiss="modal" aria-label="Close">
+                        <img alt="close" src="~/images/icons/close.png" style="width:20%; border-radius:5px;" />
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="~/Grievance/ImportFromExcel" enctype="multipart/form-data">
+                    <input type="hidden" name="Action" value="1" />
+                    <label><b>Sheet No.:</b></label>
+                    <input type="text" name="Sheet" class="form-control txtRequireds" id="Sheet" style="max-width: 100%; width:200px" maxlength="2" placeholder="Enter Sheet No." onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')" />
+
+                    <label><b>Upload File to store Grievance Records:</b></label>
+                    <input style="width:300px; max-width: 100%; position: absolute; opacity: 0;padding:6px" type="file" id="uploadnewfile" name="file" class="form-control" title=" " accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                    <div style="display:flex;">
+                        <button type="button" style="border: 1px solid lightgray; border-radius: 5px 0 0 5px; width: 20% !important">Select File</button>
+                        <input type="text" style="border: 1px solid lightgrey; border-radius: 0 5px 5px 0; width:210px; max-width: 100%;" id="UploadAttachments" value="" />
+                    </div>
+                    <div class="mt-upload">
+                        <button id="EditSave" type="submit" class="btn btn-sm brdr-1 " style="color: white; border: none; background-color: blue;box-shadow:none">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+
+    $('#uploadnewfile').change(function () {
+        debugger;
+        // var type = $('#SelectFileType').val();
+        var fileExtensions = [];
+        var alerterror = "";
+        var sheet = $.trim($('#Sheet').val());
+
+        fileExtensions = ['xlsx', 'xls', 'csv'];
+        alerterror = "Upload only 'xlsx', 'xls','csv' extension file";
+        var fn = String($(this).val());
+        var file_size = $('#uploadnewfile')[0].files[0].size;
+
+        var extension = $(this).val().split('.').pop().toLowerCase();
+        var filename = fn.match(/[^\\/]*$/)[0];
+        if (file_size > 1073741824) {
+            $('#UploadAttachments').val("");
+            $(this).replaceWith($(this).val('').clone(true));
+            alertify.alert("Maximum file size limit: 1GB")
+            var alertID = document.getElementById("alertify-ok");
+            setTimeout(function () {
+                if (alertID) {
+                    alertID.click();
+                }
+            }, 5000)
+        }
+        else if ($.inArray(extension, fileExtensions) == -1) {
+            $('#UploadAttachments').val("");
+            $(this).replaceWith($(this).val('').clone(true));
+            alertify.alert(alerterror)
+            var alertID = document.getElementById("alertify-ok");
+            setTimeout(function () {
+                if (alertID) {
+                    alertID.click();
+                }
+            }, 5000)
+        }
+
+        else {
+            $('#UploadAttachments').val(filename);
+        }
+        if (sheet == "") {
+            $('#Sheet').css('background-color', 'yellow');
+            alertify.alert("Enter Excel Sheet No.")
+            var alertID = document.getElementById("alertify-ok");
+            setTimeout(function () {
+                if (alertID) {
+                    alertID.click();
+                }
+            }, 5000)
+        }
+
+    });
+    $(document).ready(function () {
+        var page = $('.active').children().text();
+        $('#myTable').pageMe({
+            pagerSelector: '#myPager',
+            showPrevNext: true,
+            hidePageNumbers: false,
+            perPage: 25,
+            pageNo: @(ViewBag.page == null ? 0 : ViewBag.page - 1)
+
+        });
+    });
+</script>
+<script>
+
+    $('.chkCheckBoxId').change(function () {
+        var check = false;
+        $('.chkCheckBoxId').each(function () {
+            if (!$(this).prop("checked")) {
+                check = true;
+            }
+        });
+        if (!check)
+            $('#select-all').prop('checked', true);
+        else
+            $('#select-all').prop('checked', false);
+    });
+</script>
+<script>
+    const buttonRight = document.getElementById('slideRight');
+    const buttonLeft = document.getElementById('slideLeft');
+
+    buttonRight.onclick = function () {
+
+        $('.scroll-table-ov').animate({ scrollLeft: '+=900' }, 1000);
+    };
+    buttonLeft.onclick = function () {
+        $('.scroll-table-ov').animate({ scrollLeft: '-=900' }, 1000);
+    };
+    function ExportToExcelLookUp() {
+        var x = document.getElementById("dropDownYear1").value;
+        var y = document.getElementById("dropDownYearMonth").value;
+        window.location.href = "/Grievance/Records?Excel=1&Year=" + x + "&Month=" + y;
+    }
+    function dropDownYear(y) {
+        var selectyear = $("#dropDownYear1 option:selected").val();
+        var currentSelectedValue = y != "0" ? y : selectyear;
+
+        if (currentSelectedValue == "0") {
+            $(cascadedDropDownMonthId).prop("disabled", true);
+        }
+        else {
+            $(cascadedDropDownMonthId).prop("disabled", false);
+            //Get Current Year from Dropdown and Converting to Integer for performing math operations
+            var currentSelectedYear = parseInt(currentSelectedValue);
+
+            //As Index of Javascript Month is from 0 to 11 therefore totalMonths are 11 NOT 12
+            var totalMonths = 11;
+            if (currentSelectedYear == currentYear) {
+                totalMonths = currentMonth;
+            }
+            var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            //Emptying the Month Dropdown to clear our last values
+            $(cascadedDropDownMonthId).empty();
+
+            $(cascadedDropDownMonthId).append('<option value="0">-Month-</option>');
+
+            //Appending Current Valid Months
+            for (var month = 0; month <= totalMonths; month++) {
+                if ((month + 1) == Selectmonth) {
+                    $(cascadedDropDownMonthId).append('<option value="' + (month + 1) + '" selected="selected">' + monthNames[month] + '</option>');
+                } else {
+                    $(cascadedDropDownMonthId).append('<option value="' + (month + 1) + '">' + monthNames[month] + '</option>');
+                }
+            }
+        }
+    }
+</script>
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        $("input:text,form").attr("autocomplete", "off");
+        // if (isAdmin != 1 && isGlobalAdmin != 1 && isSuperAdmin != 1) {
+        //     $('.foo tr > *:nth-child(3)').hide();
+        //     $('.foo tr > *:nth-child(1)').hide();
+        // }
+        // else {
+        //     $('.foo tr > *:nth-child(14)').hide();
+        // }
+    });
+
+    $('#closeModal').click(function () {
+        location.reload();
+    });
+</script>
+<script type="text/javascript">
+        var currentYear = new Date().getFullYear();
+        var currentMonth = new Date().getMonth();
+        var cascadedDropDownMonthId = "#dropDownYearMonth";
+        var year = @Html.Raw(Json.Serialize(Model.Year));
+        var Selectmonth = @Html.Raw(Json.Serialize(Model.Month));
+
+        //Adding Last 10 Years to Year Drop Down
+        for (var i = currentYear; i > currentYear - 20; i--) {
+            if (year == i) {
+                $("#dropDownYear1").append('<option value="' + i.toString() + '" selected="selected">' + i.toString() + '</option>');
+            } else {
+                $("#dropDownYear1").append('<option value="' + i.toString() + '">' + i.toString() + '</option>');
+            }
+
+        }
+        //Disabling Month Dropdown in case of invalid Selections.
+        $(cascadedDropDownMonthId).prop("disabled", true);
+    dropDownYear(year);    
+</script>
+
+@if (ViewData["Message"] != null)
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            alertify.alert("@ViewData["Message"]");
+            var alertID = document.getElementById('alertify-ok'); if (alertID) {
+                setTimeout(function () { alertID.click(); }, 5000);
+            }
+        });
+    </script>
+}
+

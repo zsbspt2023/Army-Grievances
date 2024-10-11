@@ -1,0 +1,231 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@model ArmyGrievances.Models.IndividualModal
+@{
+    Layout = "~/Views/Shared/_VerticalLayout1.cshtml";
+    ViewBag.Title = ViewBag.PageHeading;
+}
+<link rel="stylesheet" href="~/css/jquery.datetimepicker.min.css" />
+<style>
+    .lbllarge {
+        font-size: 14.5px;
+    }
+
+    .txtRequired {
+        border-left: 5px solid blue !important;
+    }
+
+    .schemesMng input[type="text"] {
+        max-width: 100%;
+        width: 27rem;
+    }
+
+    select {
+        max-width: 430px !important;
+    }
+
+    .select2-container {
+        width: 430px !important;
+    }
+
+    .xdsoft_datetimepicker .xdsoft_month {
+        text-align: left !important;
+    }
+
+    .xdsoft_datetimepicker .xdsoft_label i {
+        display: contents
+    }
+
+    .xdsoft_datetimepicker .xdsoft_timepicker {
+        width: 70px !important;
+    }
+
+    .FitCover {
+        object-fit: cover;
+        max-width: 250px;
+        max-height: 195px;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, .2), 0 6px 20px 0 rgba(0, 0, 0, .19);
+        border-radius: 5px
+    }
+
+    .file-up {
+        position: absolute;
+        height: calc(100% + 43px);
+        width: 100%;
+    }
+
+    .jcrop-holder .img-fluid {
+        background: #FFF !important;
+    }
+</style>
+
+<form class="wrapper" action="/ESM/MngSubmit" method="post" enctype="multipart/form-data" style="padding: 5px;">
+    <div class="modal-header with-border" style="padding:0">
+        <h2 class="box-title">@ViewBag.PageHeading</h2>
+        <div>
+            <a class="brdr-1 btn-sm btn" style="padding: 5.3px 10px;" onclick="goBack();">Return</a>
+        </div>
+    </div>
+    <div class="wrapper">
+        <div class="row">
+            <div class="col-lg-12 schemesMng">
+                <div class="text-center">
+                    <div class="card" style="display:flex;width:100%!important">
+                        <input type="hidden" class="form-control" name="Id" value="@Model.Id" />
+
+                        <div class="row p-2">
+                            <div class="row">
+                                <div class="col-md-3" style="text-align: right;">
+                                    <label class=" lbllarge mt-1 me-1 p-0" for="Army_No">Army No:</label>
+                                </div>
+                                <input type="text" class="txtRequired form-control" id="Army_No" name="Army_No" value="@Model.Army_No" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align:right;">
+                                    <label class=" lbllarge mt-1 me-1">Rank:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="Rank" name="Rank" value="@Model.Rank" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align:right;">
+                                    <label class=" lbllarge mt-1 me-1">Name:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="Name" name="Name" value="@Model.Name" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align: right;">
+                                    <label class=" lbllarge mt-1 me-1 p-0">Address:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="Address" name="Address" value="@Model.Address" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align: right;">
+                                    <label class=" lbllarge mt-1 me-1 p-0">Mobile No:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="Mobile_No" name="Mobile_No" value="@Model.Mobile_No" maxlength="10" onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')" />
+
+                            </div>
+                            <div class="mt-save">
+                                <button id="EditSave" type="submit" class="btn btn-sm brdr-1 " style="color: white; border: none; background-color: orange;box-shadow:none" onclick="return validateInputs(this);">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<script src="~/Scripts/jquery.datetimepicker.full.min.js"></script>
+<script src="~/Scripts/jquery-moment.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        debugger;
+        $(".datetimepicker").datetimepicker({ format: 'd/m/Y', formatDate: 'd/m/Y' });
+        $('.xdsoft_timepicker').hide();
+        function matchStart(term, text) {
+            if (text.toUpperCase().indexOf(term.toUpperCase()) > -1) {
+                return true;
+            }
+            return false;
+        }
+    });
+
+</script>
+<script>
+    function reset() {
+        $('#Army_No').css('background-color', 'white');
+        $('#Rank').css('background-color', 'white');
+        $('#Name').css('background-color', 'white');
+        $('#Address').css('background-color', 'white');
+        $('#Mobile_No').css('background-color', 'white');
+    }
+
+    function validateInputs(e) {
+        reset();
+        var Army_No = $.trim($('#Army_No').val());
+        var Rank = $.trim($('#Rank').val());
+        var Name = $.trim($('#Name').val());
+        var Address = $.trim($('#Address').val());
+        var Mobile_No = $.trim($('#Mobile_No').val());
+        var error = "";
+        if (Army_No == "") {
+            error += "&#9679 Enter Army No. <br>";
+            $('#Army_No').css('background-color', 'yellow');
+        }
+        else if (Army_No != "") {
+            var valid = "false";
+            $.ajax({
+                url: "/ESM/checkExistArmyNo",
+                datatype: 'json',
+                data: { "ArmyNo": Army_No },
+                async: false,
+                success: function (response) {
+                    valid = response;
+                }
+            });
+            if (valid == "true") {
+                error += "&#9679 This Army number already exist. <br>";
+                $('#Army_No').css('background-color', 'yellow');
+            }
+        }
+        if (Rank == "") {
+            error += "&#9679 Enter Rank <br>";
+            $('#Rank').css('background-color', 'yellow');
+        }
+        if (Name == "") {
+            error += "&#9679 Enter Name <br>";
+            $('#Name').css('background-color', 'yellow');
+        }
+
+        if (Address == "") {
+            error += "&#9679 Enter address <br>";
+            $('#Address').css('background-color', 'yellow');
+        }
+
+        if (Mobile_No == "") {
+            error += "&#9679 Enter Mobile No <br>";
+            $("#Mobile_No").css('background-color', 'yellow');
+        }
+        else if (Mobile_No.length != 10) {
+            error += "&#9679 Please Enter 10 digit Mobile Number <br>";
+            $('#Mobile_No').css('background-color', 'yellow');
+        }
+        if (error != "") {
+            var lines = error.split("<br>").length;
+            if (lines > 2) {
+                var errormsg = "Please correct all issues before Save <br>";
+                errormsg += error;
+                alertify.alert(errormsg);
+            }
+            else
+                alertify.alert(error);
+            return false;
+        }
+    }
+</script>
+
+
+<script>
+    function OnchangeDate() {
+        $('.xdsoft_datetimepicker.xdsoft_noselect.xdsoft_').hide();
+    }
+
+    function goBack() {
+        window.history.back();
+    }
+</script>
+@if (ViewData["Message"] != null)
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            alertify.alert("@ViewData["Message"]");
+            var alertID = document.getElementById('alertify-ok'); if (alertID) {
+                setTimeout(function () { alertID.click(); }, 5000);
+            }
+        });
+    </script>
+}
+
+

@@ -1,0 +1,384 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Army Grievances | @ViewBag.Title</title>
+    <link rel="stylesheet" type="text/css" href="~/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="~/css/Portolostyle.css">
+    <link rel="stylesheet" type="text/css" href="~/css/responsive.css">
+    <link rel="stylesheet" type="text/css" href="~/css/App4Min.css" />
+    <link rel="stylesheet" type="text/css" href="~/css/jquery-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="~/css/multiple-select.css" />
+    <link rel="stylesheet" type="text/css" href="~/css/PagedList.css" />
+    <link rel="stylesheet" type="text/css" href="~/css/site.css" />
+    
+    <link rel="stylesheet" type="text/css" href="~/css/select2.css" />
+    <script type="text/javascript" src="~/Scripts/bootstrap.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery-3.6.4.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/modernizr-2.8.3.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/alertify.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/jquery.datetimepicker.full.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/multiple-select.js"></script>
+    <script type="text/javascript" src="~/Scripts/nicEdit-latest.js"></script>
+    <script type="text/javascript" src="~/Scripts/select2.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/Pagination.js"></script>
+    <script type="text/javascript" src="~/Scripts/c3.min.js"></script>
+    <script type="text/javascript" src="~/Scripts/d3.min.js"></script>
+    <script src="~/Scripts/jquery.cookie.js"></script>
+    <script src="~/Scripts/siteCouncilCommon.js"></script>
+    <style>
+
+        li.menu-item.current-menu-item {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .sub-nav {
+            top: 24px;
+            left: 0
+        }
+
+        .n-ordr-menu-items {
+            display: none;
+        }
+
+        .n-order-menu {
+            position: relative;
+        }
+
+        li.n-order-menu:hover .n-ordr-menu-items {
+            display: block
+        }
+
+
+
+        .n-ordr-menu-items {
+            display: none;
+            background: #eeee;
+            border: 1px solid #D4D4D4;
+        }
+
+        .d-in-col-div li {
+            display: inline-block;
+            width: 100%;
+        }
+
+        header {
+            box-shadow: 0 1px 5px #00000040;
+        }
+
+        #Logout {
+            color: #fff !important;
+        }
+    </style>
+
+
+
+    <script>
+
+        function set_cookie(cookieName, cookieValue, nDays) {
+            var today = new Date();
+            var expire = new Date();
+            if (nDays == null || nDays == 0) nDays = 1;
+            expire.setTime(today.getTime() + nDays * 24 * 60 * 60 * 1000);
+            document.cookie = cookieName + "=" + escape(cookieValue) +
+                ";expires=" + expire.toGMTString() +
+                "; path=/";
+        }
+
+        function get_cookie(cname) {
+            var name = cname + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var ca = decodedCookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1);
+                if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+            }
+            return "";
+        }
+    </script>
+</head>
+
+<body style="padding:0%;font-size:14px;">
+  
+    @if (HttpContextAccessor.HttpContext.Session.GetString("User") != null && HttpContextAccessor.HttpContext.Session.GetString("User") != "")
+    {
+        <div class="strip-info">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="botm-links  position-relative">
+                                <ul id="primary-menu" class="menu nav-menu res-menu-opn">
+                                    <li class="menu-item current-menu-item" style="width:10%">
+                                        <a class="nav__link mr-0" href="~/Home/Dashboard" title="Go To DashBoard"><img src="~/images/icons/Home.png" width="32px" height="32px" /></a>
+                                    </li>
+                                    @if (HttpContextAccessor.HttpContext.Session.GetString("User") != null && HttpContextAccessor.HttpContext.Session.GetInt32("IsGlobalAdmin") != 1)
+                                    {
+                                       
+                                        <li class="menu-item current-menu-item">
+                                            <a class="nav__link mr-0">Development Agenda</a>
+                                            <ul class="sub-nav  menu-item top-title-bar-s current-menu-item d-in-col-div" style="width:250px; ">
+                                                <li><a class="sub-nav__link" href="~/Dev/SchemeManagement">Add New Work</a></li>
+                                                <li><a class="sub-nav__link" href="~/Dev/WorkDetails">Work Details</a></li>
+                                                <li><a class="sub-nav__link" href="~/Chart/BarChart">Work Status Bar Chart</a></li>
+                                            </ul>
+                                        </li>
+                                        @if (HttpContextAccessor.HttpContext.Session.GetInt32("IsAdmin") == 1)
+                                        {
+                                            <li class="menu-item current-menu-item">
+                                                <a class="nav__link mr-0">System</a>
+                                                <ul class="sub-nav  menu-item top-title-bar-s current-menu-item d-in-col-div" style="width:250px; ">
+                                                    <li><a class="sub-nav__link" href="~/User/Users">Users</a></li>
+                                                </ul>
+                                            </li>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <li class="menu-item current-menu-item">
+                                            <a class="nav__link mr-0">Development Status</a>
+                                            <ul class="sub-nav  menu-item top-title-bar-s current-menu-item d-in-col-div" style="width:250px; ">
+                                                <li><a class="sub-nav__link" href="~/Chart/WorkStatus">Work Status Pie Chart</a></li>
+                                            </ul>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+
+                            <div class="log-in-out">
+                                <span>@Html.Raw(HttpContextAccessor.HttpContext.Session.GetString("User"))</span>
+                                <button id="Logout" class="brdr-1">Sign Out</button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @*     <div class="carousel-inner">
+            <div class="slider">
+                <div class="container">
+                    <img id="img-1" src="~/images/SliderImages/a.jpg" alt="Image 1" />
+                    <div class="text-block">
+                        <p style="font-size:24px"><b>Work at MGNREGS Construction site</b></p>
+                    </div>
+                </div>
+                <div class="container">
+                    <img id="img-2" src="~/images/SliderImages/b.jpg" alt="Image 2" />
+                    <div class="text-block">
+                        <p style="font-size:24px"><b>Minor Work</b></p>
+                    </div>
+                </div>
+                <div class="container">
+                    <img id="img-3" src="~/images/SliderImages/c.jpg" alt="Image 3" />
+                    <div class="text-block">
+                        <p style="font-size:24px"><b>Gram Sachivalaya Khari Sureran Institution</b></p>
+                    </div>
+                </div>
+                <div class="container">
+                    <img id="img-4" src="~/images/SliderImages/d.jpg" alt="Image 4" />
+                    <div class="text-block">
+                        <p style="font-size:24px"> <b> Checkdam under MGNREGS </b></p>
+                    </div>
+                </div>
+                <div class="container">
+                    <img id="img-5" src="~/images/SliderImages/e.jpg" alt="Image 5" />
+                    <div class="text-block">
+                        <p style="font-size:24px"><b>Five pond System under MGNREGS</b></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="control-prev" id="carousel-prev" type="button"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Previous</span></button>
+        <button class="control-next" id="carousel-next" type="button"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Next</span></button>
+        <div class="navigation-button">
+            <span class="dot active" onclick="changeSlide(0)"></span>
+            <span class="dot" onclick="changeSlide(1)"></span>
+            <span class="dot" onclick="changeSlide(2)"></span>
+            <span class="dot" onclick="changeSlide(3)"></span>
+            <span class="dot" onclick="changeSlide(4)"></span>
+        </div>
+        <link rel="stylesheet" type="text/css" href="~/css/Slider.css" />
+        <script type="text/javascript" src="~/js/Slider.js"></script> *@
+    }
+    <div class="modal fade" id="modaltermsOfUse" tabindex="-1" aria-labelledby="modalOne" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered portolo-popup-des">
+            <div class="modal-content">
+                <div class="modal-header modalBlueHeader">
+                    <h5 class="lblTitle" style="color:black;padding-left:2%">Contact Us</h5>
+                    <div>
+                        <button id="closeModalPopup" type="button" style="border: 0;background: 0;text-align: right;" data-bs-dismiss="modal" aria-label="Close">
+                            <img alt="close" src="~/images/icons/close.png" style="width:20%; border-radius:5px;" />
+                        </button>
+                    </div>
+                </div>
+                <div id="custom_contents" class="modal-body">
+                    <div class="row">
+                        <div class="col-lg-12 text-left" style="margin:5px;">
+                            <div class="wpb_wrapper">
+                                <div class="wpb_text_column wpb_content_element ">
+                                    <div class="wpb_wrapper">
+                                        <p class="text-justify">This website is designed &amp; developed by National Informatics Center,Sonipat and maintained by District Administration, Sonipat, Government of India.</p>
+                                        <p class="text-justify">Any feedback, related to content, design, or technology may be submitted at Feedback section.</p>
+                                        <p class="text-justify">You can also contact us at the following address:</p>
+                                        <div>
+                                            <p>Deputy Commissioner Office, Mini Secretariat, Sonipat (Haryana) – 131001</p>
+                                            <p><strong>Office Phone</strong> : +91-130-2220500</p>
+                                            <p><strong>Camp Office Phone</strong> : +91-130-2221255</p>
+                                            <p><strong>Fax</strong> : +91-130-2221500</p>
+                                            <p><strong>Email</strong> : dio-snp@nic.in</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalHelpline" tabindex="-1" aria-labelledby="modalOne" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered portolo-popup-des">
+            <div class="modal-content">
+                <div class="modal-header modalBlueHeader">
+                    <h5 class="lblTitle" style="color:black;padding-left:2%"><span class="icon-phone-2"></span>Helpline Numbers</h5>
+                    <div>
+                        <button id="closeModalPopup" type="button" style="border: 0;background: 0;text-align: right;" data-bs-dismiss="modal" aria-label="Close">
+                            <img alt="close" src="~/images/icons/close.png" style="width:20%; border-radius:5px;" />
+                        </button>
+                    </div>
+                </div>
+                <div id="custom_contents" class="modal-body">
+                    <div class="row" style="margin:5px;">
+                        <div class="col-md-3" style="width:50%;">
+                            <ul>
+                                <li class="  ">
+                                    <a href="https://sonipat.gov.in/hi/%E0%A4%B9%E0%A5%87%E0%A4%B2%E0%A5%8D%E0%A4%AA%E0%A4%B2%E0%A4%BE%E0%A4%87%E0%A4%A8/" target=" _blank" style="">
+                                        <div class="list-text">Child Helpline -<b> 1098 </b>				</div>
+                                    </a>
+                                </li>
+                                <li class="  ">
+                                    <a href="https://sonipat.gov.in/hi/%E0%A4%B9%E0%A5%87%E0%A4%B2%E0%A5%8D%E0%A4%AA%E0%A4%B2%E0%A4%BE%E0%A4%87%E0%A4%A8/" target=" _blank" style="">
+                                        <div class="list-text">Fire and Rescue :  101				</div>
+                                    </a>
+                                </li>
+                                <li class="  ">
+                                    <a href="https://sonipat.gov.in/hi/%E0%A4%B9%E0%A5%87%E0%A4%B2%E0%A5%8D%E0%A4%AA%E0%A4%B2%E0%A4%BE%E0%A4%87%E0%A4%A8/" target=" _blank" style="">
+                                        <div class="list-text">Police Control Room:  100				</div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-3" style="width:50%;">
+                            <ul>
+                                <li class="  ">
+                                    <a href="https://sonipat.gov.in/hi/%E0%A4%B9%E0%A5%87%E0%A4%B2%E0%A5%8D%E0%A4%AA%E0%A4%B2%E0%A4%BE%E0%A4%87%E0%A4%A8/" target=" _blank" style="">
+                                        <div class="list-text">Women Helpline -<b> 181 </b></div>
+                                    </a>
+
+                                </li>
+                                <li class="  ">
+                                    <a href="https://sonipat.gov.in/hi/%E0%A4%B9%E0%A5%87%E0%A4%B2%E0%A5%8D%E0%A4%AA%E0%A4%B2%E0%A4%BE%E0%A4%87%E0%A4%A8/" target=" _blank" style="">
+                                        <div class="list-text">Ambulance Help Line:   102</div>
+                                    </a>
+                                </li>
+                                <li class="  ">
+                                    <div class="list-anchor">
+                                        <div class="list-text">Saral Help Line : 0172-3968400</div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="main-wrap-b">
+        <div class="container" id="uniquecontainer">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="body-main-wrap" style="margin-top:0.5% !important;">
+                        @RenderBody()
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="loading" align="center">
+        <img src="~/images/icons/colorful-loading.gif" alt="" />
+        <br />
+        <br />
+        <b>Loading...   Please Wait!</b>
+    </div>
+    <footer class="main-footer" style="position: fixed; bottom: 0px; width: 100%; z-index: 210;background-color:#d3d3d3; ">
+        <div class="row">
+            <div class="col-lg-12 text-center">
+                <div class="ack">
+                    <p style="font-size:14px">
+                        <a href="https://sonipat.gov.in/website-policies/" target="_blank"><b>Website Policies</b></a>&nbsp;&nbsp; <a onclick="ShowContactPopup()" class="footerlink"><b>Contact Us</b></a>&nbsp;&nbsp;
+                       @*  <a onclick="ShowHelplinePopup()" class="footerlink"><b>Helpline Numbers</b></a>&nbsp;&nbsp;  *@<a href="https://sonipat.gov.in/feedback/" target="_blank"><b>Feedback</b></a> <br />
+                        Content Owned by District Administration © Sonipat,<br /> Developed and hosted by
+                        <a href="http://www.nic.in/" target="_blank"> National Informatics Centre</a>, Sonipat<br><a href="http://meity.gov.in/" target="_blank">Ministry of Electronics & Information Technology</a> , Government of India
+                    </p>
+                </div>
+                <p style="font-size:14px"> ©  <span id="year" style="text-decoration: underline;"></span> All Rights Reserved &nbsp;</p>
+            </div>
+        </div>
+    </footer>
+    @RenderSection("scripts", required: false)
+</body>
+</html>
+
+
+
+<style>
+
+
+    .sys-col-div li {
+        display: inline-block;
+        width: 24%;
+    }
+
+
+    div#modaltermsOfUse .modal-dialog-centered {
+        max-width: 800px;
+        margin-top: 0px;
+    }
+
+    div#modalVideoReference .modal-dialog-centered {
+        max-width: 1200px;
+        max-height: 1000px;
+        min-width: 350px;
+        min-height: 250px;
+    }
+
+    .ack a:hover {
+        color: #00008b;
+        text-shadow: 5px 5px 10px #FF0000;
+    }
+
+    ul {
+        list-style: disc outside;
+    }
+
+    .container {
+        position: relative;
+        font-family: Arial;
+    }
+
+</style>
+<script>
+    function ShowContactPopup() {
+        $('#modaltermsOfUse').modal('show');
+        $('#modaltermsOfUse').draggable();
+    }
+</script>

@@ -1,0 +1,41 @@
+@import url('responsive.css');
+@media (max-width:1920px) {
+	.container {
+		max-width: 100% !important
+	}
+	.Div_feedback .col-md-3 {
+		text-align: right !important;
+		padding: 0;
+	}
+}
+
+@media (max-width:1601px) {
+	.container {
+		max-width: 100% !important
+	}
+	.Div_feedback .col-md-3 {
+		text-align: right !important;
+		padding: 0;
+	}
+}
+@media(max-width:768px) {
+	.Div_feedback .col-md-3 {
+		text-align: left !important;
+		padding: 0;
+	}
+	.Div_feedback input[type="text"]{
+		width: 100% !important;
+	}
+	.rowFeedback
+	{
+		padding-left:30px!important;
+	}
+	.col-md-8 {
+		margin-left: -4.5%!important;
+	}
+	#FeedBack{
+		width:280px!important;
+		max-width:109% !important;
+	}
+
+}

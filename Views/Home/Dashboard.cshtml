@@ -1,0 +1,232 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewBag.Title = "Home";
+    Layout = "~/Views/Shared/_VerticalLayout1.cshtml";
+}
+<style>
+    .botm-links a {
+        margin-right: 30px !important;
+    }
+
+    li.menu-item.current-menu-item {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .sub-nav {
+        top: 24px;
+        left: 0
+    }
+
+    .modalBlueHeaders {
+        padding: 5px;
+        background-color: lightblue;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+    }
+
+    thead {
+        background-color: #6e6c6c;
+    }
+
+    th a {
+        color: white;
+    }
+
+    thead {
+        position: sticky;
+        top: 0;
+    }
+
+    .scroll-table-ov {
+        height: 400px;
+        overflow: auto;
+        overflow-x: scroll;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        color: white;
+    }
+
+    .lblTitle {
+        padding: 4px;
+        font-size: 19px;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .lblClass {
+        font-weight: 700;
+        font-size: large;
+    }
+
+    .RefreshIcon {
+        width: 30px;
+    }
+</style>
+
+<br />
+<section>
+    <div class="wrapper">
+
+        <div class="col-lg-12" style="display: flex; justify-content: center;">
+            <div class="text-center workstatusdash">
+                <div class="card">
+                    @* <button id="slideLeft" style="position:absolute; left:4px;padding:0" class="btn btm-sm" title="Scroll Left" type="button"><img src="~/images/icons/leftarrow.png" width="32" height="32" /></button>
+ *@
+                     <h1 style="align-content:center;">Welcome To OnBoard Army Grievances Dasboard</h1>
+                    @*<button id="slideRight" style="position:absolute;right:4px;padding:0" class="btn btm-sm" title="Scroll Right" type="button"><img src="~/images/icons/rightarrow.png" width="32" height="32" /></button>
+                     *@
+                    <label id="hdnlavel" style="background-color:greenyellow;font-size:14px;display:none;"><b>@ViewData["Message"]</b></label>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="modal fade" id="newOrg" tabindex="-1" aria-labelledby="modalOne" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered portolo-popup-des" style="max-width:50%">
+        <div class="modal-content">
+
+            <div class="modal-header modalBlueHeaders">
+                <h5 class="lblTitle" style="color:black;padding-left:2%">Work History</h5>
+                <div>
+                    <button id="closeModalPopup" type="button" style="border: 0;background: 0;text-align: right;" data-bs-dismiss="modal" aria-label="Close">
+                        <img alt="close" src="~/images/icons/close.png" style="width:20%; border-radius:5px;" />
+                    </button>
+                </div>
+            </div>
+            <div id="custom_contents" class="modal-body">
+                <label class="lblTitle1" style="color:black;padding-left:2%"></label>
+                <div class="row" style="margin:5px;">
+                    <table id="filetable" class="cedvel table table-striped table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>S.No.</th>
+                                <th>Work Status</th>
+                                <th>Date</th>
+                                <th>Work Progress Files</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filetbody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        var page = $('.active').children().text();
+        $('#mytable').pageMe({
+            pagerSelector: '#myPager',
+            showPrevNext: true,
+            hidePageNumbers: false,
+            perPage: 10,
+            pageNo: @(ViewBag.page == null ? 0 : ViewBag.page - 1),
+        });
+    });
+
+
+    function DropdownFilter() {
+        debugger;
+        var id = $("#UserDropdown option:selected").val();
+        var Scheme = $("#SchemesDropdown option:selected").val();
+
+        window.location.href = "/Home/Dashboard?FilterId=" + id + "&SchemeNo=" + Scheme;
+    }
+    function GetDetails(id) {
+        $.ajax({
+            url: "/Dev/WorkHistory/" + id,
+            dataType: "json",
+            success: function (response) {
+                $('#filetbody').text('');
+                var tr = "";
+                if (response != null) {
+                    $('.lblTitle1').html(response.briefAnnouncment)
+                    $(response.listdev).each(function (idx, item) {
+                        debugger;
+                        tr += "<tr>"
+                        tr += "<td>" + item.sno + "</td>";
+                        tr += "<td>" + item.workStatus + "</td>";
+                        tr += "<td>" + item.announcementDate + "</td>";
+                        tr += "<td><a title='View Work Progress' href= '/Home/WorkProgressFiles?files=" + item.imgUpload + "&WS=" + item.workStatus + "' target='_blank'><img alt='Qries' src='/images/icons/ViewIcon1.png' style='width: 25px; height: 20px'></a></td>";
+                        tr += "</tr>";
+                    });
+                } else {
+                    tr += "<tr>"
+                    tr += "<td colspan='4' style='text-align: center;'><b> No Record Found </b></td>";
+                    tr += "</tr>";
+                }
+
+                $('#filetbody').append(tr);
+                $('#newOrg').modal('show');
+                $('.modal-content').draggable();
+            },
+            error: function (response) { }
+        });
+        return false;
+    }
+    function GetFeedBack(id) {
+        var admin = @Html.Raw(Json.Serialize(@HttpContextAccessor.HttpContext?.Session.GetInt32("IsGlobalAdmin")));
+
+        $.ajax({
+            url: "/Home/WorkFeedBack/" + id,
+            dataType: "json",
+            success: function (response) {
+                if (admin == 1) {
+                    $('#FeedBack1').val(response.feedBack1);
+                    $('#hdAction').val(4);
+                    $('.lblfeed').html('D.C. FeedBack');
+                }
+                else {
+                    $('#FeedBack1').val(response.feedBack2);
+                    $('#hdAction').val(5);
+                    $('.lblfeed').html('HOD FeedBack');
+                }
+                $('#hdId').val(id);
+                $('.lblfeed1').html(response.briefAnnouncment);
+                $('#FeedBack').modal('show');
+                $('.modal-content').draggable();
+            },
+            error: function (response) { }
+        });
+        return false;
+    }
+    function GetRemarks(id) {
+        $.ajax({
+            url: "/Home/WorkFeedBack/" + id,
+            dataType: "json",
+            success: function (response) {
+                $('#Remarks').val(response.remarks);
+                document.getElementById("Remarks").readOnly = true;
+                $('#remarksPopup').modal('show');
+                $('.modal-content').draggable();
+            },
+            error: function (response) { }
+        });
+        return false;
+    }
+</script>
+@if (ViewData["Message"] != null)
+{
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#hdnlavel").css('display', 'block');
+        });
+    </script>
+}
+
+
+<script type="text/javascript">
+    function preventBack() {
+        window.history.forward();
+    }
+    setTimeout("preventBack()", 0);
+    window.onunload = function () { null };
+</script>
+
