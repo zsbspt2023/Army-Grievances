@@ -103,7 +103,12 @@
                                     <label class=" lbllarge mt-1 me-1 p-0">Mobile No:</label>
                                 </div>
                                 <input type="text" class="form-control txtRequired" id="Mobile_No" name="Mobile_No" value="@Model.Mobile_No" maxlength="10" onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')" />
-
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align: right;">
+                                    <label class=" lbllarge mt-1 me-1 p-0">Identity Card No:</label>
+                                </div>
+                                <input type="text" class="form-control" id="IdentityCardNo" name="IdentityCardNo" value="@Model.IdentityCardNo" />
                             </div>
                             <div class="mt-save">
                                 <button id="EditSave" type="submit" class="btn btn-sm brdr-1 " style="color: white; border: none; background-color: orange;box-shadow:none" onclick="return validateInputs(this);">Save</button>
@@ -149,6 +154,7 @@
         var Name = $.trim($('#Name').val());
         var Address = $.trim($('#Address').val());
         var Mobile_No = $.trim($('#Mobile_No').val());
+        var IdentityCardNo = $.trim($('#IdentityCardNo').val());
         var error = "";
         if (Army_No == "") {
             error += "&#9679 Enter Army No. <br>";

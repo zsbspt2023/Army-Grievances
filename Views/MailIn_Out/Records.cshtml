@@ -2,7 +2,7 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @model ArmyGrievances.Models.MainIn_OutModal
 @{
-    ViewBag.Title = "Mail Out & In List";
+    ViewBag.Title = ViewBag.PageHeading;
     Layout = "~/Views/Shared/_VerticalLayout1.cshtml";
 }
 
@@ -189,7 +189,7 @@
                 <div class="box box-primary control-icons pt-0">
                     <form action="~/MailIn_Out/Records" method="post" enctype="multipart/form-data">
                         <div class="box-header ">
-                            <h2 class="box-title">Mail Out & In List</h2>
+                            <h2 class="box-title">@ViewBag.PageHeading</h2>
                             <a onclick="ExportToExcelLookUp()" title="Download Excel">
                                 <img src="~/images/icons/excel_icon.png" class="nav-icons-port" />
                             </a>
@@ -245,7 +245,7 @@
                                 <table class="table table-striped table-bordered table-hover foo" style="width:250%;table-layout: fixed; border-radius:4px;">
                                     <thead>
                                         <tr class="table-hd">
-                                            <th style="width:1%!important"><input type="checkbox" name="select-all" onchange="Checkboxchange(this);" id="select-all" /></th>
+                                            <th style="width:1%!important"><input type="checkbox" name="select-all" id="select-all" /></th>
                                             <th style="width:1.5%!important">S.No</th>
                                             <th style="width:4%!important">File Name</th>
                                             <th style="width:6%!important">Letter No</th>
@@ -290,17 +290,6 @@
                                                     @*  <td>@item.Addressed_To</td> *@
                                                     <td>@item.Subject</td>
                                                     <td style="text-align:center;"><a href="JavaScript:void(0);" onclick="GetDetails(@item.Mail_Id)" title="Edit"><img alt="Qries" src="~/images/icons/EditIcon.png" style="width: 25px; height:25px;"> </a> </td>
-                                                    @*  <td>@item.ZSB_MemoNo</td>
-                                            <td>@item.Diary_No</td>
-
-
-                                            <td>@item.Recieving_Date</td>
-
-                                            <td>@item.Copy_To</td> *@
-
-
-                                                    @* <td>@item.LetterPlaced_File</td> *@
-
                                                 </tr>
                                             }
                                         }

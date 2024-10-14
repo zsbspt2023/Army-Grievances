@@ -91,6 +91,7 @@ namespace ArmyGrievances.Repository
                         Name = dr["Name"].ToString(),
                         Address = dr["Address"].ToString(),
                         Mobile_No = dr["Mobile_No"].ToString(),
+                        IdentityCardNo = dr["IdentityCardNo"].ToString(),
                     });
                 }
                 obj1.individuals = obj;
@@ -101,6 +102,36 @@ namespace ArmyGrievances.Repository
 
             }
             return obj1;
+        }
+        public async Task<List<ElegibleCertificate>> SP_FetchEligibleCertificate(string id, IConfiguration configuration)
+        {
+            StatusCode obj2 = new StatusCode();
+            List<ElegibleCertificate> obj = new List<ElegibleCertificate>();
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                   new SqlParameter("@Army_No", id)
+            };
+
+            DataTable dt = await SqlHelper.ExecuteTableAsync("select *, Convert(char(10),Date,103) EligibleDate from tbl_ESMEligibilityCertificate where ArmyNo = @Army_No", CommandType.Text, parameters, configuration);
+            if (dt.Rows.Count > 0)
+            {
+                int i = 1;
+                foreach (DataRow dr in dt.Rows)
+                {
+                    obj.Add(new ElegibleCertificate
+                    {
+                        S_No = i++,
+                        Army_No = dr["ArmyNo"].ToString(),
+                        Certificate_No = dr["CertificateNo"].ToString(),
+                        Date = dr["EligibleDate"].ToString(),
+                    });
+                }
+            }
+            else
+            {
+                obj2.ErrorMsg = "No Record Found";
+            }
+            return obj;
         }
         public async Task<StatusCode> SP_IndividualManagement(IndividualModal individual, IConfiguration configuration)
         {
@@ -113,6 +144,7 @@ namespace ArmyGrievances.Repository
                 new SqlParameter("@Name", individual.Name),
                 new SqlParameter("@Address", individual.Address),
                 new SqlParameter("@Regt_Record",individual.Mobile_No),
+                new SqlParameter("@IdentityCardNo",individual.IdentityCardNo),
                 new SqlParameter("@Action", individual.Action),
             };
             bool isInsert = await SqlHelper.ExecuteNonQueryAsync("Sp_IndividualManagement", CommandType.StoredProcedure, parameters, configuration);
@@ -121,6 +153,29 @@ namespace ArmyGrievances.Repository
                 obj.Status = "Ok";
                 obj.ErrorMsg = "ESM Individual Record";
                 obj.ErrorMsg += individual.Action == 1 ? " added Successfully!" : " updated Successfully!";
+            }
+            else
+            {
+                obj.Status = "Bad Request";
+                obj.ErrorMsg = "Internal Request Error";
+            }
+            return obj;
+        }
+        public async Task<StatusCode> SP_CertificateManagement(ElegibleCertificate certificate, IConfiguration configuration)
+        {
+            StatusCode obj = new StatusCode();
+            SqlParameter[] parameters = new SqlParameter[]
+            {               
+                new SqlParameter("@Army_No",certificate.Army_No),
+                new SqlParameter("@CertificateNo", certificate.Certificate_No),
+                new SqlParameter("@Date", certificate.Date),
+                new SqlParameter("@Action",3),
+            };
+            bool isInsert = await SqlHelper.ExecuteNonQueryAsync("Sp_IndividualManagement", CommandType.StoredProcedure, parameters, configuration);
+            if (isInsert)
+            {
+                obj.Status = "Ok";
+                obj.ErrorMsg = "ESM Eligibility Certificate added successfully!";
             }
             else
             {
@@ -196,6 +251,7 @@ namespace ArmyGrievances.Repository
 
             return obj;
         }
+
         public async Task<StatusCode> SP_CheckExistServiceNo(string id, IConfiguration configuration)
         {
             StatusCode obj = new StatusCode();

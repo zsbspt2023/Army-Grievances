@@ -17,5 +17,7 @@ namespace ArmyGrievances.Repository
         Task<StatusCode> SP_CheckExistArmyNo(string id, IConfiguration configuration);
         Task<StatusCode> SP_IndividualManagement(IndividualModal individual, IConfiguration configuration);
         Task<StatusCode> SP_CheckExistServiceNo(string id, IConfiguration configuration);
+        Task<List<ElegibleCertificate>> SP_FetchEligibleCertificate(string id, IConfiguration configuration);
+        Task<StatusCode> SP_CertificateManagement(ElegibleCertificate certificate, IConfiguration configuration);
     }
 }

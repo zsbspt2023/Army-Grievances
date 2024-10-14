@@ -28,7 +28,7 @@ namespace ArmyGrievances.Controllers
             string reportname = "ESM_Excel.xlsx";
             if (excel == 1)
             {
-                List<IndividualExcel>? excelStatusReports = individual?.individuals?.Select(e => new IndividualExcel { S_No = e.S_No, Army_No = e.Army_No, Rank = e.Rank, Name = e.Name, Address = e.Address, Mobile_No = e.Mobile_No }).ToList();
+                List<IndividualExcel>? excelStatusReports = individual?.individuals?.Select(e => new IndividualExcel { S_No = e.S_No, Army_No = e.Army_No, Rank = e.Rank, Name = e.Name, Address = e.Address, Mobile_No = e.Mobile_No, Identity_Card_No = e.IdentityCardNo }).ToList();
 
                 if (excelStatusReports?.Count > 0)
                 {
@@ -53,6 +53,7 @@ namespace ArmyGrievances.Controllers
             IndividualModal individual = new IndividualModal();
             return View(individual);
         }
+
         public async Task<IActionResult> EditIndividual(string id)
         {
             if (HttpContext.Session.GetString("User") == null)
@@ -74,10 +75,25 @@ namespace ArmyGrievances.Controllers
             TempData["Message"] = status.ErrorMsg;
             return Redirect("~/ESM/Records");
         }
+        public async Task<JsonResult> EligibleCertificate(string id)
+        {
+            List<ElegibleCertificate> ilist = new List<ElegibleCertificate>();
+            var response = await _operationRepository.SP_FetchEligibleCertificate(id,_configuration);
+            var result = response;
+            if(result.Count  == 0) { result = null; }
+            return Json(result);
+        }
         public async Task<JsonResult> checkExistArmyNo(string ArmyNo)
         {
             //StatusCode status = new StatusCode();
             var response = await _operationRepository.SP_CheckExistArmyNo(ArmyNo, _configuration);
+            var result = response.Status;
+            return Json(result);
+        }
+        public async Task<JsonResult> ECSubmit(ElegibleCertificate elegibleCertificate)
+        {
+            //StatusCode status = new StatusCode();
+            var response = await _operationRepository.SP_CertificateManagement(elegibleCertificate, _configuration);
             var result = response.Status;
             return Json(result);
         }

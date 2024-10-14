@@ -135,6 +135,7 @@ namespace ArmyGrievances.Models
         public string? Name { get; set; }
         public string? Address { get; set; }
         public string? Mobile_No { get; set; }
+        public string? IdentityCardNo { get; set; }
         public int Action { get; set; }
         public List<IndividualModal> individuals { get; set; }
     }
@@ -146,6 +147,15 @@ namespace ArmyGrievances.Models
         public string? Name { get; set; }
         public string? Address { get; set; }
         public string? Mobile_No { get; set; }
+        public string? Identity_Card_No { get; set; }
+    }
+    public class ElegibleCertificate 
+    {
+        public int S_No { get; set; }
+        public string? Certificate_No { get; set; }
+        public string? Date { get; set; }
+        public string? Army_No { get; set; }
+        public List<ElegibleCertificate>? Certificates { get; set; }    
     }
     public class SelectionList
     {

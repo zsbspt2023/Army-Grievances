@@ -219,6 +219,7 @@ namespace ArmyGrievances.Generics
                                         Name = !string.IsNullOrWhiteSpace(row.Cell(3).GetValue<string>().Trim()) ? row.Cell(3).GetValue<string>().Trim() : "",
                                         Address = !string.IsNullOrWhiteSpace(row.Cell(4).GetValue<string>().Trim()) ? row.Cell(4).GetValue<string>().Trim() : "",
                                         Mobile_No = !string.IsNullOrWhiteSpace(row.Cell(5).GetValue<string>().Trim()) ? row.Cell(5).GetValue<string>().Trim() : "",
+                                        IdentityCardNo = !string.IsNullOrWhiteSpace(row.Cell(6).GetValue<string>().Trim()) ? row.Cell(6).GetValue<string>().Trim() : "",
                                     };
                                     individuals.Add(individual);
                                 }

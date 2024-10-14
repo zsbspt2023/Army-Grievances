@@ -25,7 +25,7 @@ namespace ArmyGrievances.Controllers
                 return Redirect("~/Home");
             }
             mainIn_Out = await _operationRepository.SP_FetchMailInOutRecords(mainIn_Out, _configuration);
-            string reportname = "In&OutMail_Excel.xlsx";
+            string reportname = "OutMails_Excel.xlsx";
             if (excel == 1)
             {
                 List<MainIn_OutExcel>? excelStatusReports = mainIn_Out?.mainIn_Outs?.Select(e => new MainIn_OutExcel
@@ -33,6 +33,44 @@ namespace ArmyGrievances.Controllers
                     S_No = e.S_No,
                     File_Name = e.Item,
                     Mail_Out_Date = e.MailOut_Date,
+                    Subject = e.Subject,
+                    To_Whom = e.ToWhom,
+                    Rank = e.Rank,
+                    Service_No = e.Service_No,
+                    Name = e.Name,
+                    //Letter_Date = e.Letter_Date,
+                    Letter_No = e.Letter_No
+                }).ToList();
+
+                if (excelStatusReports?.Count > 0)
+                {
+                    var exportbytes = _commonGeneric.ExporttoExcel<MainIn_OutExcel>(excelStatusReports, reportname);
+                    return File(exportbytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", reportname);
+                }
+                else
+                {
+                    TempData["Message"] = "No Data to Export";
+                }
+            }
+            ViewData["Message"] = TempData["Message"];
+            ViewBag.PageHeading = "Out Mail Records";
+            return View(mainIn_Out);
+        }
+        public async Task<IActionResult> InRecords(MainIn_OutModal mainIn_Out, int excel = 0)
+        {
+            if (HttpContext.Session.GetString("User") == null)
+            {
+                return Redirect("~/Home");
+            }
+            mainIn_Out = await _operationRepository.SP_FetchMailInOutRecords(mainIn_Out, _configuration);
+            string reportname = "InMails_Excel.xlsx";
+            if (excel == 1)
+            {
+                List<MainIn_OutExcel>? excelStatusReports = mainIn_Out?.mainIn_Outs?.Select(e => new MainIn_OutExcel
+                {
+                    S_No = e.S_No,
+                    File_Name = e.Item,
+                    //Mail_Out_Date = e.MailOut_Date,
                     Subject = e.Subject,
                     To_Whom = e.ToWhom,
                     Rank = e.Rank,
@@ -53,9 +91,9 @@ namespace ArmyGrievances.Controllers
                 }
             }
             ViewData["Message"] = TempData["Message"];
-            return View(mainIn_Out);
+            ViewBag.PageHeading = "In Mail Records";
+            return View("~/Views/MailIn_Out/Records.cshtml", mainIn_Out);
         }
-
         public IActionResult NewMail()
         {
             if (HttpContext.Session.GetString("User") == null)

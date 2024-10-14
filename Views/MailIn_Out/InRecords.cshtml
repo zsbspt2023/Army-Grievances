@@ -1,16 +1,15 @@
 ﻿@using Microsoft.AspNetCore.Http
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
-@model ArmyGrievances.Models.IndividualModal
+@model ArmyGrievances.Models.MainIn_OutModal
 @{
-    ViewBag.Title = "ESM Individual Records";
+    ViewBag.Title = ViewBag.PageHeading;
     Layout = "~/Views/Shared/_VerticalLayout1.cshtml";
 }
 
 <script>
     function GetDetails(id) {
-        window.location.href = "/ESM/EditIndividual?id=" + id;
+        window.location.href = "/MailIn_Out/EditMail?id=" + id;
     }
-
 </script>
 <script type="text/javascript">
     $(document).ready(function () {
@@ -41,17 +40,15 @@
         $('.modal-content').draggable();
     }
     function alertMe() {
-        debugger;
         var checklist = [];
         $(':checkbox:checked').each(function () {
             if (this.value != "on")
                 checklist.push(this.value);
         });
-        var ids = checklist.join(",");
+        var ids = checklist.join(", ");
         var arrayIds = ids.split(',');
         var count = arrayIds.length;
         var statement = count == 1 ? "row" : "rows";
-
         if (ids == "") {
             alertify.alert("Select any row and try again");
             var alertID = document.getElementById('alertify-ok'); if (alertID) {
@@ -63,10 +60,10 @@
             alertify.confirm('Confirm delete selected ' + statement + '?', function (e) {
                 if (e) {
                     $.ajax({
-                        url: "/ESM/DeleteRecords",
+                        url: "/MailIn_Out/DeleteRecords",
                         data: { ids: ids },
                         success: function (res) {
-                            //console.log(res);
+                            console.log(res);
                             if (res == "true") {
                                 window.location.reload();
                             }
@@ -89,7 +86,6 @@
     }
 </script>
 
-<link rel="stylesheet" href="~/css/jquery.datetimepicker.min.css" />
 <style>
     .form-control:disabled, .form-control[readonly] {
         background-color: #e9ecef0f;
@@ -181,20 +177,8 @@
         color: #333;
     }
 
-    .xdsoft_datetimepicker .xdsoft_month {
-        text-align: left !important;
-    }
-
-    .xdsoft_datetimepicker .xdsoft_label i {
-        display: contents
-    }
-
-    .xdsoft_datetimepicker .xdsoft_timepicker {
-        width: 70px !important;
-    }
-
     .form-select {
-        width: 20%;
+        /*   width: 20%; */
         display: inline;
     }
 </style>
@@ -203,13 +187,13 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="box box-primary control-icons pt-0">
-                    <form action="~/ESM/Records" method="post" enctype="multipart/form-data">
+                    <form action="~/MailIn_Out/Records" method="post" enctype="multipart/form-data">
                         <div class="box-header ">
-                            <h2 class="box-title">ESM Individual Records</h2>
+                            <h2 class="box-title">@ViewBag.PageHeading</h2>
                             <a onclick="ExportToExcelLookUp()" title="Download Excel">
                                 <img src="~/images/icons/excel_icon.png" class="nav-icons-port" />
                             </a>
-                            <a href="~/ESM/Records"><img src="~/images/icons/Refresh.png" class="nav-icons-port" title="Reset" /></a>
+                            <a href="~/MailIn_Out/Records"><img src="~/images/icons/Refresh.png" class="nav-icons-port" title="Reset" /></a>
                             <button type="submit" value="Search" title="Search" style="border-color: white;border: none;background:none">
                                 <img src="~/images/icons/search.png" class="nav-icons-port" />
                             </button>
@@ -222,15 +206,31 @@
                                 <a id="btnBack" class="brdr-1 btn-sm" href="javascript:void(0);" onclick="goBack()"> Return</a>
                             </div>
                         </div>
-
-                        <div class="control-icons" style="padding:0!important">
+                        <div class="control-icons" style="padding:0">
                             <div class="row">
                                 <div class="col-3">
-                                    <label style="font-weight:bold; font-size:15px;">Army No.:</label>
-                                    @Html.TextBox("Army_No", null, new { @class = "form-control d-inline-block", @placeholder = "Enter Army No.", @style = "max-width:100%;width:100%;" })
+                                    <label style="font-weight:bold; font-size:15px;">Letter Date (Year/Month):</label><br />
+                                    <select class="form-select" id="dropDownYear1" name="Year" onchange="dropDownYear(0);" style="width:40%">
+                                        <option value="0">-Year-</option>
+                                    </select>
+                                    <select class="form-select" id="dropDownYearMonth" name="Month" style="width:50%">
+                                        <option value="0">-Month-</option>
+                                    </select>
                                 </div>
 
-                                <div class="col-6" style="padding-top:21px!important;">
+                                <div class="col-3">
+                                    <label style="font-weight:bold; font-size:15px;">File Name:</label><br />
+                                    <select class="form-select" id="fileNames" name="Item">
+                                        <option value="0">-Select-</option>
+                                    </select>
+                                </div>
+                                <div class="col-3">
+                                    <label style="font-weight:bold; font-size:15px;">Service No.:</label>
+                                    @Html.TextBoxFor(m => m.Service_No, null, new { @class = "form-control d-inline-block", @placeholder = "Enter Service No.", @style = "max-width:100%;width:100%;" })
+                                </div>
+                                <div class="col-3">
+                                    <label style="font-weight:bold; font-size:15px;">Letter No.:</label>
+                                    @Html.TextBoxFor(m => m.Letter_No, null, new { @class = "form-control d-inline-block", @placeholder = "Enter Letter No.", @style = "max-width:100%;width:100%;" })
                                 </div>
                             </div>
                         </div>
@@ -242,50 +242,54 @@
                             <button id="slideLeft" style="position:absolute; left:4px;padding:0" class="btn btm-sm" title="Scroll Left" type="button"><img src="~/images/icons/leftarrow.png" width="32" height="32" /></button>
                             <button id="slideRight" style="position:absolute;right:4px;padding:0" class="btn btm-sm" title="Scroll Right" type="button"><img src="~/images/icons/rightarrow.png" width="32" height="32" /></button>
                             <div class="scroll-table-ov">
-                                <table class="table table-striped table-bordered table-hover foo" style="width:150%;table-layout: fixed; border-radius:4px;">
+                                <table class="table table-striped table-bordered table-hover foo" style="width:250%;table-layout: fixed; border-radius:4px;">
                                     <thead>
                                         <tr class="table-hd">
-                                            <th style="width:2%!important"><input type="checkbox" name="select-all" id="select-all" /></th>
-                                            <th style="width:2%!important">S.No</th>
-                                            <th style="width:5%!important">Army No.</th>
-                                            <th style="width:4%!important">Rank</th>
+                                            <th style="width:1%!important"><input type="checkbox" name="select-all" id="select-all" /></th>
+                                            <th style="width:1.5%!important">S.No</th>
+                                            <th style="width:4%!important">File Name</th>
+                                            <th style="width:6%!important">Letter No</th>
+                                            <th style="width:6%!important">Letter Date</th>
+                                            <th style="width:6%!important">Mail Out Date</th>
+                                            <th style="width:6%!important">Service No</th>
                                             <th style="width:10%!important">Name</th>
-                                            <th style="width:12%!important">Address</th>
-                                            <th style="width:7%!important">Mobile No.</th>
-                                            <th style="width:7%!important">Identity Card No.</th>
-                                            <th style="width:7%!important">Eligibility Certificate</th>
-                                            <th style="text-align: center; width: 4%">Edit</th>
+                                            <th style="width:6%!important">Rank</th>
+                                            <th style="width:10%!important">To Whom</th>
+                                            <th style="width:10%!important">Subject</th>
+                                            <th style="text-align: center; width: 2%">Edit</th>
                                         </tr>
                                     </thead>
                                     <tbody id="myTable">
-                                        @if (Model.individuals != null && Model.individuals.Count > 0)
+                                        @if (Model.mainIn_Outs != null && Model.mainIn_Outs.Count > 0)
                                         {
-                                            foreach (var item in Model.individuals)
+                                            foreach (var item in Model.mainIn_Outs)
                                             {
                                                 <tr>
-                                                    <td> <input type="checkbox" name="ID" value="@item.Id" class="custom-checkbox chkCheckBoxId" /> </td>
+                                                    <td> <input type="checkbox" name="ID" value="@item.Mail_Id" class="custom-checkbox chkCheckBoxId" /> </td>
                                                     <td>@item.S_No</td>
-                                                    <td>@item.Army_No</td>
-                                                    <td>@item.Rank</td>
+                                                    <td>@item.Item</td>
+                                                    <td>@item.Letter_No</td>
+                                                    <td>@item.Letter_Date</td>
+                                                    <td>@item.MailOut_Date</td>
+                                                    <td>@item.Service_No</td>
                                                     <td>@item.Name</td>
-                                                    <td>@item.Address</td>
-                                                    <td>@item.Mobile_No</td>
-                                                    <td>@item.IdentityCardNo</td>
-                                                    <td style="text-align:center;"><a href="JavaScript:void(0);" onclick="GetCertificate('@item.Army_No')" title="Edit"><img alt="Qries" src="~/images/icons/CertificateIcon.png" style="width: 25px; height:25px;"> </a> </td>
-                                                    <td style="text-align:center;"><a href="JavaScript:void(0);" onclick="GetDetails(@item.Id)" title="Edit"><img alt="Qries" src="~/images/icons/EditIcon.png" style="width: 25px; height:25px;"> </a> </td>
+                                                    <td>@item.Rank</td>
+                                                    <td>@item.ToWhom</td>
+                                                    <td>@item.Subject</td>
+                                                    <td style="text-align:center;"><a href="JavaScript:void(0);" onclick="GetDetails(@item.Mail_Id)" title="Edit"><img alt="Qries" src="~/images/icons/EditIcon.png" style="width: 25px; height:25px;"> </a> </td>
                                                 </tr>
                                             }
                                         }
                                         else
                                         {
-                                            <tr><td colspan="10" style="text-align:center"><b>No Record Found</b></td></tr>
+                                            <tr><td colspan="12" style="text-align:center"><b>No Record Found</b></td></tr>
                                         }
                                     </tbody>
                                 </table>
                             </div>
-                            @if (Model.individuals != null)
+                            @if (Model.mainIn_Outs != null)
                             {
-                                @if (Model.individuals.Count >= 25)
+                                @if (Model.mainIn_Outs.Count >= 50)
                                 {
                                     <div class="row">
                                         <div class="col-md-12 d-flex justify-content-center" style="text-align:center;">
@@ -318,11 +322,12 @@
                 </div>
             </div>
             <div class="modal-body">
-                <form method="post" action="~/ESM/ImportFromExcel" enctype="multipart/form-data">
-                    <input type="hidden" name="Action" value="3" />
+                <form method="post" action="~/Grievance/ImportFromExcel" enctype="multipart/form-data">
+                    <input type="hidden" name="Action" value="2" />
                     <label><b>Sheet No.:</b></label>
                     <input type="text" name="Sheet" class="form-control txtRequireds" id="Sheet" style="max-width: 100%; width:200px" maxlength="2" placeholder="Enter Sheet No." onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')" />
-                    <label><b>Upload File to store ESM Individual Records:</b></label>
+
+                    <label><b>Upload File to store In/Out Mail Records:</b></label>
                     <input style="width:300px; max-width: 100%; position: absolute; opacity: 0;padding:6px" type="file" id="uploadnewfile" name="file" class="form-control" title=" " accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                     <div style="display:flex;">
                         <button type="button" style="border: 1px solid lightgray; border-radius: 5px 0 0 5px; width: 20% !important">Select File</button>
@@ -336,139 +341,7 @@
         </div>
     </div>
 </div>
-<div class="modal fade" id="newOrg" tabindex="-1" aria-labelledby="modalOne" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered portolo-popup-des" style="max-width:50%">
-        <div class="modal-content">
-
-            <div class="modal-header modalBlueHeaders">
-                <h5 class="lblTitle" style="color:black;padding-left:2%">Eligible Certificates</h5>
-                <div class="pull-left">
-                    <a id="addCertifiate" title="Add Eligibility Certificate" class="brdr-1 btn-sm" href="javascript:void(0);" onclick="ElgibilityCertificate();"> Add</a>
-                    <button id="closeModalPopup" type="button" style="border: 0;background: 0;text-align: right;" data-bs-dismiss="modal" aria-label="Close">
-                        <img alt="close" src="~/images/icons/close.png" style="width:20%; border-radius:5px;" />
-                    </button>
-                </div>
-            </div>
-            <div id="custom_contents" class="modal-body">
-                @*       <label class="lblTitle1" style="color:black;padding-left:2%"></label> *@
-                <div class="row" style="margin:5px;">
-                    <table id="filetable" class="cedvel table table-striped table-bordered table-sm">
-                        <thead>
-                            <tr>
-                                <th>S.No.</th>
-                                <th>Army No.</th>
-                                <th>Certificate No.</th>
-                                <th>Certificate Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="filetbody">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="EligiblePopup" class="modal fade" role="dialog" tabindex="-1" aria-labelledby="modalHeading" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header with-border">
-                <h5 class="modal-title box-title" id="modalHeading">Add Eligibility Certificate</h5>
-                <div class="pull-left">
-                    <button id="closeModalPopup" type="button" style="border: 0;background: 0;text-align: right;" data-bs-dismiss="modal" aria-label="Close">
-                        <img alt="close" src="~/images/icons/close.png" style="width:20%; border-radius:5px;" />
-                    </button>
-                </div>
-            </div>
-            <div class="modal-body">
-                @*  <form method="post" action="~/ESM/ECSubmit" enctype="multipart/form-data"> *@
-                <input type="hidden" name="Army_No" id="ArmyNo" />
-                <div class="row">
-                    <div class="col-md-6">
-                        <label><b>Certificate No.:</b></label>
-                        <input type="text" name="Certificate_No" class="form-control txtRequired" id="Certificate_No" style="max-width: 100%;" />
-                    </div>
-                    <div class="col-md-6">
-                        <label><b>Certificate Date:</b></label>
-                        <input style=" max-width: 100%;" type="text" id="Date" name="Date" class="form-control txtRequired datetimepicker" onchange="OnchangeDate();" placeholder="DD/MM/YYYY">
-                    </div>
-                    <div class="mt-save" style="position:relative;left:35%">
-                        <button id="EditSave" type="button" class="btn btn-sm brdr-1 " style="color: white; border: none; background-color: blue;box-shadow:none" onclick="return validateInputs(this);">Save</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<script src="~/Scripts/jquery.datetimepicker.full.min.js"></script>
-<script src="~/Scripts/jquery-moment.js"></script>
 <script type="text/javascript">
-    $(document).ready(function () {
-        debugger;
-        $(".datetimepicker").datetimepicker({ format: 'd/m/Y', formatDate: 'd/m/Y' });
-        $('.xdsoft_timepicker').hide();
-    });
-
-</script>
-<script type="text/javascript">
-    function ElgibilityCertificate() {
-        $('#EligiblePopup').modal('show');
-        $('.modal-content').draggable();
-    }
-    function reset() {
-        $('#Certificate_No').css('background-color', 'white');
-        $('#Date').css('background-color', 'white');
-    }
-    function validateInputs(e) {
-        var Certificate_No = $.trim($('#Certificate_No').val());
-        var Date = $.trim($('#Date').val());
-        var ArmyNo = $.trim($('#ArmyNo').val());
-        var error = "";
-        if (Army_No == "") {
-            error += "&#9679 Enter Eligibility Certificate No. <br>";
-            $('#Certificate_No').css('background-color', 'yellow');
-        }
-        if (Date == "") {
-            error += "&#9679 Enter Eligibility Certificate Date <br>";
-            $('#Date').css('background-color', 'yellow');
-        }
-        if (error != "") {
-            var lines = error.split("<br>").length;
-            if (lines > 2) {
-                var errormsg = "Please correct all issues before Save <br>";
-                errormsg += error;
-                alertify.alert(errormsg);
-            }
-            else
-                alertify.alert(error);
-            return false;
-        }
-        else {
-            var elegibleCertificate = {
-                Certificate_No: Certificate_No,
-                Date: Date,
-                Army_No: ArmyNo
-            };
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("ESM", "ECSubmit")',
-                data: { elegibleCertificate },
-                success: function (response) {
-                    if (response == "Ok") {
-                        $('#EligiblePopup').modal('hide');
-                        GetCertificate("'"+ArmyNo+"'");
-                    }
-                    else {
-                        alert("Something Wrong");
-                    }
-                },
-                error: function (response) {
-                }
-            });
-
-        }
-    }
-
 
     $('#uploadnewfile').change(function () {
         debugger;
@@ -518,7 +391,7 @@
                 if (alertID) {
                     alertID.click();
                 }
-            }, 5000)
+            }, 5000);
         }
 
     });
@@ -528,16 +401,12 @@
             pagerSelector: '#myPager',
             showPrevNext: true,
             hidePageNumbers: false,
-            perPage: 25,
-            pageNo: '@(ViewBag.page == null ? 0 : ViewBag.page - 1)'
-
-        });
+            perPage: 50,
+            pageNo: @(ViewBag.page == null ? 0 : ViewBag.page - 1)
+            });
     });
 </script>
 <script>
-
-
-
     $('.chkCheckBoxId').change(function () {
         var check = false;
         $('.chkCheckBoxId').each(function () {
@@ -563,9 +432,57 @@
         $('.scroll-table-ov').animate({ scrollLeft: '-=900' }, 1000);
     };
     function ExportToExcelLookUp() {
-        var x = document.getElementById("Army_No").value;
-        window.location.href = "/ESM/Records?Excel=1&Army_No=" + x;
+        var x = document.getElementById("dropDownYear1").value;
+        var y = document.getElementById("dropDownYearMonth").value;
+        var z = document.getElementById("fileNames").value;
+        var s = document.getElementById("Service_No").value;
+        var l = document.getElementById("Letter_No").value;
+        window.location.href = "/MailIn_Out/Records?Excel=1&Year=" + x + "&Month=" + y + "&Item=" + z + "&Service_No=" + s + "&Letter_No=" + l;
     }
+</script>
+
+<script>
+    function goBack() {
+        window.history.back();
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        $("input:text,form").attr("autocomplete", "off");
+        // if (isAdmin != 1 && isGlobalAdmin != 1 && isSuperAdmin != 1) {
+        //     $('.foo tr > *:nth-child(3)').hide();
+        //     $('.foo tr > *:nth-child(1)').hide();
+        // }
+        // else {
+        //     $('.foo tr > *:nth-child(14)').hide();
+        // }
+    });
+
+    $('#closeModal').click(function () {
+        location.reload();
+    });
+</script>
+<script type="text/javascript">
+    var currentYear = new Date().getFullYear();
+    var currentMonth = new Date().getMonth();
+    var cascadedDropDownMonthId = "#dropDownYearMonth";
+    var year = @Html.Raw(Json.Serialize(Model.Year));
+    var Selectmonth = @Html.Raw(Json.Serialize(Model.Month));
+    //Adding Last 10 Years to Year Drop Down
+    for (var i = currentYear; i > currentYear - 20; i--) {
+        if (year == i) {
+            $("#dropDownYear1").append('<option value="' + i.toString() + '" selected="selected">' + i.toString() + '</option>');
+        } else {
+            $("#dropDownYear1").append('<option value="' + i.toString() + '">' + i.toString() + '</option>');
+        }
+    }
+
+    //Disabling Month Dropdown in case of invalid Selections.
+
+    $(cascadedDropDownMonthId).prop("disabled", true);
+    dropDownYear(year);
+    //$("#dropDownYear1").change(function () {
     function dropDownYear(y) {
         var selectyear = $("#dropDownYear1 option:selected").val();
         var currentSelectedValue = y != "0" ? y : selectyear;
@@ -600,59 +517,24 @@
         }
     }
 </script>
-
-<script>
-    function goBack() {
-        window.history.back();
-    }
-    function GetCertificate(id) {
-        $('#ArmyNo').val(id);
-        $.ajax({
-            url: "/ESM/EligibleCertificate/" + id,
-            dataType: "json",
-            success: function (response) {
-                $('#filetbody').text('');
-                var tr = "";
-                if (response != null) {
-                    // $('.lblTitle1').html(response.briefAnnouncment)
-                    $(response).each(function (idx, item) {
-                        debugger;
-                        tr += "<tr>"
-                        tr += "<td>" + item.s_No + "</td>";
-                        tr += "<td>" + item.army_No + "</td>";
-                        tr += "<td>" + item.certificate_No + "</td>";
-                        tr += "<td>" + item.date + "</td>";
-                        tr += "</tr>";
-                    });
-                } else {
-                    tr += "<tr>"
-                    tr += "<td colspan='4' style='text-align: center;'><b> No Record Found </b></td>";
-                    tr += "</tr>";
-                }
-
-                $('#filetbody').append(tr);
-                $('#newOrg').modal('show');
-                $('.modal-content').draggable();
-            },
-            error: function (response) { }
-        });
-        return false;
-    }
-</script>
-
 <script>
     $(document).ready(function () {
-        $("input:text,form").attr("autocomplete", "off");
+        var fileNames = ["DO II", "AGI", "FP", "CHA"];
+        var fileNameDropDown = "#fileNames";
+        $(fileNameDropDown).empty();
+        $(fileNameDropDown).append('<option value="0">-Select-</option>');
+        var Selectedfile = @Html.Raw(Json.Serialize(Model.Item));
+        for (var i = 0; i < fileNames.length; i++) {
+            if (fileNames[i] == Selectedfile) {
+                $(fileNameDropDown).append('<option value="' + fileNames[i] + '" selected="selected">' + fileNames[i] + '</option>');
+            } else {
+                $(fileNameDropDown).append('<option value="' + fileNames[i] + '">' + fileNames[i] + '</option>');
+            }
+        }
+
     });
 
-    $('#closeModal').click(function () {
-        location.reload();
-    });
-    function OnchangeDate() {
-        $('.xdsoft_datetimepicker.xdsoft_noselect.xdsoft_').hide();
-    }
 </script>
-
 
 @if (ViewData["Message"] != null)
 {
@@ -660,7 +542,7 @@
         $(document).ready(function () {
             alertify.alert("@ViewData["Message"]");
             var alertID = document.getElementById('alertify-ok'); if (alertID) {
-                setTimeout(function () { alertID.click(); }, 5000);
+                setTimeout(function () { alertID.click(); }, 10000);
             }
         });
     </script>
