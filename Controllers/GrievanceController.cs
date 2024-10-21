@@ -28,7 +28,7 @@ namespace ArmyGrievances.Controllers
             string reportname = "Grievance_Excel.xlsx";
             if (excel == 1)
             {
-                List<GrievanceExcel>? excelStatusReports = grievance?.grievances?.Select(e => new GrievanceExcel { S_No = e.S_No, Individual_Particular = e.Individual_Particular, Grievance_Recept_Date = e.Grievance_ReceptDate, Grienvance_Subject = e.Grienvance_Subject, Sent_To_Whom = e.Sent_Area, Regt_Record = e.Regt_Record, ZSB_Memo_No = e.ZSB_MemoNo, ZSB_Memo_Date = e.ZSB_MemoDate }).ToList();
+                List<GrievanceExcel>? excelStatusReports = grievance?.grievances?.Select(e => new GrievanceExcel { S_No = e.S_No, Name = e.Name, Army_No = e.ArmyNo, Grievance_Recept_Date = e.Grievance_ReceptDate, Grienvance_Subject = e.Grienvance_Subject, Sent_To_Whom = e.Sent_Area, Regt_Record = e.Regt_Record, ZSB_Memo_No = e.ZSB_MemoNo, ZSB_Memo_Date = e.ZSB_MemoDate }).ToList();
 
                 if (excelStatusReports?.Count > 0)
                 {
@@ -41,6 +41,9 @@ namespace ArmyGrievances.Controllers
                 }
             }
             ViewData["Message"] = TempData["Message"];
+            List<SelectionList> selectionList = new List<SelectionList>();
+            selectionList = await _operationRepository.SP_GetSelectionList("", _configuration);
+            ViewBag.RecordsDropdown = selectionList;
             return View(grievance);
         }
         [HttpPost]
@@ -74,7 +77,7 @@ namespace ArmyGrievances.Controllers
             return (Action == "1") ? Redirect("~/Grievance/Records") : Redirect("~/MailIn_Out/Records");
         }
 
-        public IActionResult NewGrievance()
+        public async Task<IActionResult> NewGrievance()
         {
             if (HttpContext.Session.GetString("User") == null)
             {
@@ -82,6 +85,9 @@ namespace ArmyGrievances.Controllers
             }
             ViewBag.PageHeading = "New Grievance Record";
             GrievanceModal grievance = new GrievanceModal();
+            List<SelectionList> selectionList = new List<SelectionList>();
+            selectionList = await _operationRepository.SP_GetSelectionList("", _configuration);
+            ViewBag.RecordsDropdown = selectionList;
             return View(grievance);
         }
         public async Task<IActionResult> MngSubmit(GrievanceModal grievanceModal)
@@ -103,6 +109,9 @@ namespace ArmyGrievances.Controllers
             grievance.Id = Convert.ToInt32(id);
             var response = await _operationRepository.SP_FetchGrievanceRecords(grievance, _configuration);
             grievance = response.grievances[0];
+            List<SelectionList> selectionList = new List<SelectionList>();
+            selectionList = await _operationRepository.SP_GetSelectionList("", _configuration);
+            ViewBag.RecordsDropdown = selectionList;
             return View("~/Views/Grievance/NewGrievance.cshtml", grievance);
         }
         public async Task<JsonResult> DeleteRecords(string ids)

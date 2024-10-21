@@ -72,7 +72,7 @@
                 <div class="text-center">
                     <div class="card" style="display:flex;width:100%!important">
                         <input type="hidden" class="form-control" name="Mail_Id" value="@Model.Mail_Id" id="Mail_Id" />
-                        <input type="hidden" class="form-control" name="Table" value="2" />
+                        <input type="hidden" class="form-control" name="Table" value="1" />
                         <div class="row p-2">
                             <div class="row">
                                 <div class="col-md-3" style="text-align: right;">
@@ -90,9 +90,9 @@
                             </div>
                             <div class="row mt-2">
                                 <div class="col-md-3" style="text-align: right;">
-                                    <label class=" lbllarge mt-1 me-1">Mail Out Date:</label>
+                                    <label class=" lbllarge mt-1 me-1">Letter Date:</label>
                                 </div>
-                                <input class="form-control txtRequired datetimepicker" name="MailOut_Date" type="text" id="Letter_Date" onchange="OnchangeDate();" value="@Model.MailOut_Date" placeholder="DD/MM/YYYY">
+                                <input class="form-control txtRequired datetimepicker" name="Letter_Date" type="text" id="Letter_Date" onchange="OnchangeDate();" value="@Model.Letter_Date" placeholder="DD/MM/YYYY">
                             </div>
 
                             <div class="row mt-2">
@@ -126,7 +126,18 @@
                                 </div>
                                 <input type="text" class="form-control txtRequired" id="Subject" name="Subject" value="@Model.Subject" />
                             </div>
-                            
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align:right;">
+                                    <label class=" lbllarge mt-1 me-1">Letter File Placed:</label>
+                                </div>
+
+                                <select class="form-control form-select txtRequired" value="@Model.LetterPlaced_File" name="LetterPlaced_File" id="LetterPlaced_File" style="padding-top:3px;width:100%;">
+                                    <option value="0">--Select--</option>
+                                    <option value="Resolved">Resolved</option>
+                                    <option value="Observation">Observation</option>
+                                    <option value="Pending">Pending</option>
+                                </select>
+                            </div>
 
                             <div class="mt-save">
                                 <button id="EditSave" type="submit" class="btn btn-sm brdr-1 " style="color: white; border: none; background-color: orange;box-shadow:none" onclick="return validateInputs(this);">Save</button>
@@ -179,6 +190,7 @@
     function reset() {
         $('#Item').css('background-color', 'white');
         $('#Service_No').css('background-color', 'white');
+        $('#LetterPlaced_File').css('background-color', 'white');
         $('#Letter_Date').css('background-color', 'white');
     }
 
@@ -186,8 +198,9 @@
         reset();
         var Item = $("#Item option:selected").val();
         var Service_No = $.trim($('#Service_No').val());
-        var date = $.trim($('#Letter_Date').val());
+        var LetterPlaced_File = $("#LetterPlaced_File option:selected").val();
         var Mail_Id = $.trim($('#Mail_Id').val());
+        var date = $.trim($('#Letter_Date').val());
         var error = "";
         if (Item == "0") {
             error += "&#9679 Select File Name option <br>";
@@ -198,7 +211,7 @@
             $('#Service_No').css('background-color', 'yellow');
         }
         if (date == "") {
-            error += "&#9679 Enter Mail Out Date <br>";
+            error += "&#9679 Enter Letter Date <br>";
             $('#Letter_Date').css('background-color', 'yellow');
         }
         else if (Service_No != "" && Mail_Id == 0) {
@@ -206,14 +219,14 @@
             $.ajax({
                 url: "/MailIn_Out/checkExistArmyNo",
                 datatype: 'json',
-                data: { "ArmyNo": Service_No, "tbl": "tbl_MailIn_Out" },
+                data: { "ArmyNo": Service_No, "tbl": "tbl_MailIn" },
                 async: false,
                 success: function (response) {
                     valid = response;
                 }
             });
             if (valid == "true") {
-                error += "&#9679 This Army No. already exist in <b>Out Mail Records</b><br>";
+                error += "&#9679 This Army No. already exist in <b>In Mail Records</b><br>";
                 $('#Service_No').css('background-color', 'yellow');
             }
         }
@@ -234,7 +247,12 @@
             }
         }
 
-      
+        if (LetterPlaced_File == "0") {
+            error += "&#9679 Select Letter File Placed option <br>";
+            $('#LetterPlaced_File').css('background-color', 'yellow');
+        }
+
+
         if (error != "") {
             var lines = error.split("<br>").length;
             if (lines > 2) {

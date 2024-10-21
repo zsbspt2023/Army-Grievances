@@ -24,11 +24,12 @@ namespace ArmyGrievances.Controllers
             {
                 return Redirect("~/Home");
             }
+            mainIn_Out.Action = 2;
             mainIn_Out = await _operationRepository.SP_FetchMailInOutRecords(mainIn_Out, _configuration);
             string reportname = "OutMails_Excel.xlsx";
             if (excel == 1)
             {
-                List<MainIn_OutExcel>? excelStatusReports = mainIn_Out?.mainIn_Outs?.Select(e => new MainIn_OutExcel
+                List<MainOutExcel>? excelStatusReports = mainIn_Out?.mainIn_Outs?.Select(e => new MainOutExcel
                 {
                     S_No = e.S_No,
                     File_Name = e.Item,
@@ -36,15 +37,14 @@ namespace ArmyGrievances.Controllers
                     Subject = e.Subject,
                     To_Whom = e.ToWhom,
                     Rank = e.Rank,
-                    Service_No = e.Service_No,
+                    Army_No = e.Service_No,
                     Name = e.Name,
-                    //Letter_Date = e.Letter_Date,
                     Letter_No = e.Letter_No
                 }).ToList();
 
                 if (excelStatusReports?.Count > 0)
                 {
-                    var exportbytes = _commonGeneric.ExporttoExcel<MainIn_OutExcel>(excelStatusReports, reportname);
+                    var exportbytes = _commonGeneric.ExporttoExcel<MainOutExcel>(excelStatusReports, reportname);
                     return File(exportbytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", reportname);
                 }
                 else
@@ -62,6 +62,7 @@ namespace ArmyGrievances.Controllers
             {
                 return Redirect("~/Home");
             }
+            mainIn_Out.Action = 5;
             mainIn_Out = await _operationRepository.SP_FetchMailInOutRecords(mainIn_Out, _configuration);
             string reportname = "InMails_Excel.xlsx";
             if (excel == 1)
@@ -70,14 +71,15 @@ namespace ArmyGrievances.Controllers
                 {
                     S_No = e.S_No,
                     File_Name = e.Item,
-                    //Mail_Out_Date = e.MailOut_Date,
                     Subject = e.Subject,
                     To_Whom = e.ToWhom,
                     Rank = e.Rank,
-                    Service_No = e.Service_No,
+                    Army_No = e.Service_No,
                     Name = e.Name,
                     Letter_Date = e.Letter_Date,
-                    Letter_No = e.Letter_No
+                    Letter_No = e.Letter_No,
+                    Letter_File_Placed = e.LetterPlaced_File
+                    
                 }).ToList();
 
                 if (excelStatusReports?.Count > 0)
@@ -92,7 +94,7 @@ namespace ArmyGrievances.Controllers
             }
             ViewData["Message"] = TempData["Message"];
             ViewBag.PageHeading = "In Mail Records";
-            return View("~/Views/MailIn_Out/Records.cshtml", mainIn_Out);
+            return View( mainIn_Out);
         }
         public IActionResult NewMail()
         {
@@ -100,7 +102,32 @@ namespace ArmyGrievances.Controllers
             {
                 return Redirect("~/Home");
             }
-            ViewBag.PageHeading = "New In/Out Mail Record";
+            ViewBag.PageHeading = "New Out Mail Record";
+            MainIn_OutModal mainIn_OutModal = new MainIn_OutModal();
+            return View(mainIn_OutModal);
+        }
+        public async Task<IActionResult> EditInMail(string id)
+        {
+            if (HttpContext.Session.GetString("User") == null)
+            {
+                return Redirect("~/Home");
+            }
+            ViewBag.PageHeading = "Edit In Mail Record";
+            MainIn_OutModal main = new MainIn_OutModal();
+            main.Mail_Id = Convert.ToInt32(id);
+            main.Action = 5;
+            var response = await _operationRepository.SP_FetchMailInOutRecords(main, _configuration);
+            main = response.mainIn_Outs[0];
+            ViewData["status"] = "ok";
+            return View("~/Views/MailIn_Out/NewInMail.cshtml", main);
+        }
+        public IActionResult NewInMail()
+        {
+            if (HttpContext.Session.GetString("User") == null)
+            {
+                return Redirect("~/Home");
+            }
+            ViewBag.PageHeading = "Add In Mail Record";
             MainIn_OutModal mainIn_OutModal = new MainIn_OutModal();
             return View(mainIn_OutModal);
         }
@@ -110,6 +137,7 @@ namespace ArmyGrievances.Controllers
             StatusCode status = new StatusCode();
             status = await _operationRepository.Sp_MailManagement(mainIn_Out, _configuration);
             TempData["Message"] = status.ErrorMsg;
+            if (mainIn_Out.Table == "1") { return Redirect("~/MailIn_Out/InRecords"); }
             return Redirect("~/MailIn_Out/Records");
         }
         public async Task<IActionResult> EditMail(string id)
@@ -118,21 +146,22 @@ namespace ArmyGrievances.Controllers
             {
                 return Redirect("~/Home");
             }
-            ViewBag.PageHeading = "Edit In/Out Mail Record";
+            ViewBag.PageHeading = "Edit Out Mail Record";
             MainIn_OutModal main = new MainIn_OutModal();
             main.Mail_Id = Convert.ToInt32(id);
+            main.Action = 2;
             var response = await _operationRepository.SP_FetchMailInOutRecords(main, _configuration);
             main = response.mainIn_Outs[0];
             return View("~/Views/MailIn_Out/NewMail.cshtml", main);
         }
-        public async Task<JsonResult> DeleteRecords(string ids)
+        public async Task<JsonResult> DeleteRecords(string ids, int act)
         {
             var result = "";
             string[] arrIds = ids.Split(',');
             try
             {
                 StatusCode statusCode = new StatusCode();
-                statusCode = await _operationRepository.SP_DeleteRecords(ids, 2, _configuration);
+                statusCode = await _operationRepository.SP_DeleteRecords(ids, act, _configuration);
                 result = statusCode.Status;
                 if (result == "true")
                 {
@@ -145,6 +174,13 @@ namespace ArmyGrievances.Controllers
                 result = ex.Message;
                 TempData["Message"] = ex;
             }
+            return Json(result);
+        }
+        public async Task<JsonResult> checkExistArmyNo(string ArmyNo, string tbl)
+        {
+            //StatusCode status = new StatusCode();
+            var response = await _operationRepository.SP_CheckExistServiceNo(ArmyNo,tbl, _configuration);
+            var result = response.Status;
             return Json(result);
         }
 

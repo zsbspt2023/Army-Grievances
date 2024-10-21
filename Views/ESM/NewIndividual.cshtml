@@ -71,7 +71,7 @@
             <div class="col-lg-12 schemesMng">
                 <div class="text-center">
                     <div class="card" style="display:flex;width:100%!important">
-                        <input type="hidden" class="form-control" name="Id" value="@Model.Id" />
+                        <input type="hidden" class="form-control" name="Id" value="@Model.Id" id= "ArmyId" />
 
                         <div class="row p-2">
                             <div class="row">
@@ -110,6 +110,12 @@
                                 </div>
                                 <input type="text" class="form-control" id="IdentityCardNo" name="IdentityCardNo" value="@Model.IdentityCardNo" />
                             </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align: right;">
+                                    <label class=" lbllarge mt-1 me-1 p-0">Visit Purpose:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="VisitPurpose" name="VisitPurpose" value="@Model.VisitPurpose" />
+                            </div>
                             <div class="mt-save">
                                 <button id="EditSave" type="submit" class="btn btn-sm brdr-1 " style="color: white; border: none; background-color: orange;box-shadow:none" onclick="return validateInputs(this);">Save</button>
                             </div>
@@ -145,6 +151,7 @@
         $('#Name').css('background-color', 'white');
         $('#Address').css('background-color', 'white');
         $('#Mobile_No').css('background-color', 'white');
+        $('#VisitPurpose').css('background-color', 'white');
     }
 
     function validateInputs(e) {
@@ -155,12 +162,14 @@
         var Address = $.trim($('#Address').val());
         var Mobile_No = $.trim($('#Mobile_No').val());
         var IdentityCardNo = $.trim($('#IdentityCardNo').val());
+        var VisitPurpose = $.trim($('#VisitPurpose').val());
+        var ArmyId = $.trim($('#ArmyId').val());
         var error = "";
         if (Army_No == "") {
             error += "&#9679 Enter Army No. <br>";
             $('#Army_No').css('background-color', 'yellow');
         }
-        else if (Army_No != "") {
+        else if (Army_No != "" && ArmyId == 0) {
             var valid = "false";
             $.ajax({
                 url: "/ESM/checkExistArmyNo",
@@ -197,6 +206,10 @@
         else if (Mobile_No.length != 10) {
             error += "&#9679 Please Enter 10 digit Mobile Number <br>";
             $('#Mobile_No').css('background-color', 'yellow');
+        }
+        if (VisitPurpose == "") {
+            error += "&#9679 Enter Purpose of Visit <br>";
+            $('#VisitPurpose').css('background-color', 'yellow');
         }
         if (error != "") {
             var lines = error.split("<br>").length;

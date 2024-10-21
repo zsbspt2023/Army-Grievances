@@ -24,6 +24,7 @@ namespace ArmyGrievances.Controllers
             {
                 return Redirect("~/Home");
             }
+            individual.Action = 3;
             individual = await _operationRepository.SP_FetchIndividualRecords(individual, _configuration);
             string reportname = "ESM_Excel.xlsx";
             if (excel == 1)
@@ -33,6 +34,33 @@ namespace ArmyGrievances.Controllers
                 if (excelStatusReports?.Count > 0)
                 {
                     var exportbytes = _commonGeneric.ExporttoExcel<IndividualExcel>(excelStatusReports, reportname);
+                    return File(exportbytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", reportname);
+                }
+                else
+                {
+                    TempData["Message"] = "No Data to Export";
+                }
+            }
+            ViewData["Message"] = TempData["Message"];
+            return View(individual);
+        }
+
+        public async Task<IActionResult> VisitLogs(IndividualModal individual, int excel = 0)
+        {
+            if (HttpContext.Session.GetString("User") == null)
+            {
+                return Redirect("~/Home");
+            }
+            individual.Action = 4;
+            individual = await _operationRepository.SP_FetchIndividualRecords(individual, _configuration);
+            string reportname = "VisitLogs_Excel.xlsx";
+            if (excel == 1)
+            {
+                List<VisitLogsExcel>? excelStatusReports = individual?.individuals?.Select(e => new VisitLogsExcel { S_No = e.S_No, Army_No = e.Army_No, Rank = e.Rank, Name = e.Name, Visit_Date = e.VisitDate, Visit_Purpose = e.VisitPurpose }).ToList();
+
+                if (excelStatusReports?.Count > 0)
+                {
+                    var exportbytes = _commonGeneric.ExporttoExcel<VisitLogsExcel>(excelStatusReports, reportname);
                     return File(exportbytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", reportname);
                 }
                 else
@@ -63,6 +91,7 @@ namespace ArmyGrievances.Controllers
             ViewBag.PageHeading = "Edit Individual Record";
             IndividualModal individual = new IndividualModal();
             individual.Id = Convert.ToInt32(id);
+            individual.Action = 3;
             var response = await _operationRepository.SP_FetchIndividualRecords(individual, _configuration);
             individual = response.individuals[0];
             return View("~/Views/ESM/NewIndividual.cshtml", individual);

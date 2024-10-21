@@ -30,6 +30,8 @@ namespace ArmyGrievances.Models
         public int S_No { get; set; }
         public int Id { get; set; }
         public string? Individual_Particular { get; set; }
+        public string? ArmyNo { get; set; }
+        public string? Name { get; set; }
         [DataType(DataType.Date)]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
         public string? Grievance_ReceptDate { get; set; }
@@ -38,7 +40,7 @@ namespace ArmyGrievances.Models
         public string? Year { get; set; } = "0";
         public string? Grienvance_Subject { get; set; }
         public string? Sent_Area { get; set; }
-        public string? Regt_Record { get; set; } = "";
+        public string? Regt_Record { get; set; } = "0";
         public string? ZSB_MemoNo { get; set; }
         [DataType(DataType.Date)]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
@@ -50,7 +52,9 @@ namespace ArmyGrievances.Models
     public class GrievanceExcel
     {
         public int S_No { get; set; }
-        public string? Individual_Particular { get; set; }
+        // public string? Individual_Particular { get; set; }
+        public string? Army_No { get; set; }
+        public string? Name { get; set; }
         [DataType(DataType.Date)]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
         public string? Grievance_Recept_Date { get; set; }
@@ -88,54 +92,56 @@ namespace ArmyGrievances.Models
         [DataType(DataType.Date)]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
         public string? Letter_Date { get; set; }
-        public bool LetterPlaced_File { get; set; }
+        public string? LetterPlaced_File { get; set; }
         public string? Year { get; set; } = "0";
         public string? Month { get; set; } = "0";
+        public string? Table { get;set; }
         public int Action {  get; set; }
         public List<MainIn_OutModal> mainIn_Outs { get; set; }
+    }
+    public class MainOutExcel
+    {
+        public int S_No { get; set; }
+        public string? File_Name { get; set; }
+        public string? Letter_No { get; set; }
+        [DataType(DataType.Date)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
+        public string? Mail_Out_Date { get; set; }
+        public string? Army_No { get; set; }
+        public string? Name { get; set; }
+        public string? Rank { get; set; }
+        public string? To_Whom { get; set; }
+        public string? Subject { get; set; }
     }
     public class MainIn_OutExcel
     {
         public int S_No { get; set; }
-        public string? File_Name { get; set; }
-        
+        public string? File_Name { get; set; }        
         public string? Letter_No { get; set; }
         [DataType(DataType.Date)]
         [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
         public string? Letter_Date { get; set; }
         [DataType(DataType.Date)]
-        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
-        public string? Mail_Out_Date { get; set; }
-     
-        public string? Service_No { get; set; }
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")] 
+        public string? Army_No { get; set; }
         public string? Name { get; set; }
         public string? Rank { get; set; }
         public string? To_Whom { get; set; }
         public string? Subject { get; set; }
-       
-        //public string? ZSB_Memo_No { get; set; }
-        //public long Diary_No { get; set; }
-    
-        
-        //[DataType(DataType.Date)]
-        //[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:MM/dd/yyyy}")]
-        //public string? Recieving_Date { get; set; }
-        //public string? Addressed_To { get; set; }
-        
-       
- 
-        //public bool Letter_Placed_File { get; set; }
+        public string? Letter_File_Placed { get; set; }
     }
     public class IndividualModal
     {
         public int S_No { get; set; }
-        public int Id { get; set; }
+        public int Id { get; set; } = 0;
         public string?  Army_No { get; set; }
         public string? Rank { get; set; }
         public string? Name { get; set; }
         public string? Address { get; set; }
         public string? Mobile_No { get; set; }
         public string? IdentityCardNo { get; set; }
+        public string? VisitPurpose { get; set; }
+        public string? VisitDate { get; set; }
         public int Action { get; set; }
         public List<IndividualModal> individuals { get; set; }
     }
@@ -148,6 +154,15 @@ namespace ArmyGrievances.Models
         public string? Address { get; set; }
         public string? Mobile_No { get; set; }
         public string? Identity_Card_No { get; set; }
+    }
+    public class VisitLogsExcel
+    {
+        public int S_No { get; set; }
+        public string? Army_No { get; set; }
+        public string? Rank { get; set; }
+        public string? Name { get; set; }
+        public string? Visit_Date { get; set; }
+        public string? Visit_Purpose { get; set; }
     }
     public class ElegibleCertificate 
     {

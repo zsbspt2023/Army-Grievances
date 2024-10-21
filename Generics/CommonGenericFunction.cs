@@ -163,7 +163,9 @@ namespace ArmyGrievances.Generics
                                 {
                                     var grievance = new GrievanceModal
                                     {
-                                        Individual_Particular = row.Cell(2).GetValue<string>().Trim(),
+                                        ArmyNo = row.Cell(1).GetValue<string>().Trim(),
+                                        Name  = row.Cell(2).GetValue<string>().Trim(),
+                                        //Individual_Particular = row.Cell(2).GetValue<string>().Trim(),
                                         Grievance_ReceptDate = row.Cell(3).GetValue<string>().Trim(),
                                         Grienvance_Subject = row.Cell(4).GetValue<string>().Trim(),
                                         Sent_Area = row.Cell(5).GetValue<string>().Trim(),
@@ -198,7 +200,7 @@ namespace ArmyGrievances.Generics
                                         Copy_To = !string.IsNullOrWhiteSpace(row.Cell(11).GetValue<string>().Trim()) ? row.Cell(11).GetValue<string>().Trim() : "",
                                         Letter_No = !string.IsNullOrWhiteSpace(row.Cell(12).GetValue<string>().Trim()) ? row.Cell(12).GetValue<string>().Trim() : "",
                                         Letter_Date = !string.IsNullOrWhiteSpace(row.Cell(13).GetValue<string>().Trim()) ? row.Cell(13).GetValue<string>().Trim() : null,
-                                        LetterPlaced_File = false
+                                        //LetterPlaced_File = false
                                     };
                                     mailIn_Outs.Add(mailIn_Out);
                                 }

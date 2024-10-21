@@ -102,8 +102,15 @@
                                 <div class="col-md-3" style="text-align: right;">
                                     <label class=" lbllarge mt-1 me-1 p-0">Regt. Record:</label>
                                 </div>
-                                <input type="text" class="form-control txtRequired" id="Regt_Record" name="Regt_Record" value="@Model.Regt_Record" />
-
+                                <div class="col-md-8" style="padding:0; text-align:left">
+                                    @Html.DropDownList("Regt_Record", new SelectList(ViewBag.RecordsDropdown, "Value", "Text"), new
+                                        {
+                                            @style = "max-width:100%;width:100%;",
+                                            @id = "RecordsDropdown",
+                                            @class = "form-control form-select",
+                                            @title = "Records Dropdown",
+                                        })
+                                </div>
                             </div>
                             <div class="row mt-2">
                                 <div class="col-md-3" style="text-align: right;">
@@ -136,12 +143,21 @@
         debugger;
         $(".datetimepicker").datetimepicker({ format: 'd/m/Y', formatDate: 'd/m/Y' });
         $('.xdsoft_timepicker').hide();
+        $("input:text,form").attr("autocomplete", "off");
+
         function matchStart(term, text) {
             if (text.toUpperCase().indexOf(term.toUpperCase()) > -1) {
                 return true;
             }
             return false;
         }
+
+        $.fn.select2.amd.require(['select2/compat/matcher'], function (oldMatcher) {
+            $("#RecordsDropdown").select2({
+                matcher: oldMatcher(matchStart)
+            })
+        });
+        $("#RecordsDropdown option[value='@Model.Regt_Record']").attr("selected", "selected");
     });
 
 </script>
@@ -151,10 +167,10 @@
         $('#Grievance_ReceptDate').css('background-color', 'white');
         $('#Grienvance_Subject').css('background-color', 'white');
         $('#Sent_Area').css('background-color', 'white');
-        $('#Regt_Record').css('background-color', 'white');
+        $('#RecordsDropdown').siblings('.select2').children('.selection').children('.select2-selection').css('background-color', 'white');
+        //$('#Regt_Record').css('background-color', 'white');
         $('#ZSB_MemoNo').css('background-color', 'white');
-        $('#ZSB_MemoDate').css('background-color', 'white');
-       
+        $('#ZSB_MemoDate').css('background-color', 'white');       
     }
 
     function validateInputs(e) {
@@ -163,7 +179,7 @@
         var Grievance_ReceptDate = $.trim($('#Grievance_ReceptDate').val());
         var Grienvance_Subject = $.trim($('#Grienvance_Subject').val());
         var Sent_Area = $.trim($('#Sent_Area').val());
-        var Regt_Record = $.trim($('#Regt_Record').val());
+        var Regt_Record = $("#RecordsDropdown option:selected").val();
         var ZSB_MemoNo = $.trim($('#ZSB_MemoNo').val());
         var ZSB_MemoDate = $.trim($('#ZSB_MemoDate').val());
         var error = "";
@@ -181,13 +197,13 @@
         }
 
         if (Sent_Area == "") {
-            error += "&#9679 Enter send to whom. <br>";
+            error += "&#9679 Enter sent to whom <br>";
             $('#Sent_Area').css('background-color', 'yellow');
         }
 
-        if (Regt_Record == "") {
-            error += "&#9679 Enter Regt. Record <br>";
-            $("#Regt_Record").css('background-color', 'yellow');
+        if (Regt_Record == "0") {
+            error += "&#9679 Select Regt. Record option<br>";
+            $('#RecordsDropdown').siblings('.select2').children('.selection').children('.select2-selection').css('background-color', 'yellow');
         }
         if (ZSB_MemoNo == "") {
             error += "&#9679 Enter ZSB Memo No.<br>";

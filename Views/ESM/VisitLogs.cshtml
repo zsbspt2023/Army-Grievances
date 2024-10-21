@@ -2,16 +2,10 @@
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @model ArmyGrievances.Models.IndividualModal
 @{
-    ViewBag.Title = "ESM Individual Records";
+    ViewBag.Title = "ESM Visitor Logs";
     Layout = "~/Views/Shared/_VerticalLayout1.cshtml";
 }
 
-<script>
-    function GetDetails(id) {
-        window.location.href = "/ESM/EditIndividual?id=" + id;
-    }
-
-</script>
 <script type="text/javascript">
     $(document).ready(function () {
         var primarykey = [];
@@ -35,59 +29,6 @@
     });
 </script>
 
-<script>
-    function Openform() {
-        $('#Uploadfile').modal('show');
-        $('.modal-content').draggable();
-    }
-    function alertMe() {
-        debugger;
-        var checklist = [];
-        $(':checkbox:checked').each(function () {
-            if (this.value != "on")
-                checklist.push(this.value);
-        });
-        var ids = checklist.join(",");
-        var arrayIds = ids.split(',');
-        var count = arrayIds.length;
-        var statement = count == 1 ? "row" : "rows";
-
-        if (ids == "") {
-            alertify.alert("Select any row and try again");
-            var alertID = document.getElementById('alertify-ok'); if (alertID) {
-                setTimeout(function () { alertID.click(); }, 5000);
-            }
-            return false;
-        }
-        else {
-            alertify.confirm('Confirm delete selected ' + statement + '?', function (e) {
-                if (e) {
-                    $.ajax({
-                        url: "/ESM/DeleteRecords",
-                        data: { ids: ids },
-                        success: function (res) {
-                            //console.log(res);
-                            if (res == "true") {
-                                window.location.reload();
-                            }
-                            else {
-                                alertify.alert('Select one or more rows and try again');
-                                var alertID = document.getElementById("alertify-ok");
-                                setTimeout(function () {
-                                    if (alertID) {
-                                        alertID.click();
-                                    }
-                                }, 5000)
-                            }
-                        }
-                    });
-
-                }
-            });
-            return false;
-        }
-    }
-</script>
 
 <link rel="stylesheet" href="~/css/jquery.datetimepicker.min.css" />
 <style>
@@ -203,22 +144,17 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="box box-primary control-icons pt-0">
-                    <form action="~/ESM/Records" method="post" enctype="multipart/form-data">
+                    <form action="~/ESM/VisitLogs" method="post" enctype="multipart/form-data">
                         <div class="box-header ">
-                            <h2 class="box-title">ESM Individual Records</h2>
+                            <h2 class="box-title">ESM Visitor Logs</h2>
                             <a onclick="ExportToExcelLookUp()" title="Download Excel">
                                 <img src="~/images/icons/excel_icon.png" class="nav-icons-port" />
                             </a>
-                            <a href="~/ESM/Records"><img src="~/images/icons/Refresh.png" class="nav-icons-port" title="Reset" /></a>
+                            <a href="~/ESM/VisitLogs"><img src="~/images/icons/Refresh.png" class="nav-icons-port" title="Reset" /></a>
                             <button type="submit" value="Search" title="Search" style="border-color: white;border: none;background:none">
                                 <img src="~/images/icons/search.png" class="nav-icons-port" />
                             </button>
                             <div class="controls">
-                                @if (HttpContextAccessor.HttpContext?.Session.GetInt32("IsAdmin") == 1 || HttpContextAccessor.HttpContext?.Session.GetInt32("IsSuperAdmin") == 1)
-                                {
-                                    <button type="button" value="" class="brdr-1 btn-sm" data-toggle="modal" data-target="#Uploadfile" onclick="Openform();">Upload File</button>
-                                    <button type="button" value="Delete" class="brdr-1 btn-sm" onclick="return alertMe();">Delete</button>
-                                }
                                 <a id="btnBack" class="brdr-1 btn-sm" href="javascript:void(0);" onclick="goBack()"> Return</a>
                             </div>
                         </div>
@@ -239,19 +175,15 @@
                             <button id="slideLeft" style="position:absolute; left:4px;padding:0" class="btn btm-sm" title="Scroll Left" type="button"><img src="~/images/icons/leftarrow.png" width="32" height="32" /></button>
                             <button id="slideRight" style="position:absolute;right:4px;padding:0" class="btn btm-sm" title="Scroll Right" type="button"><img src="~/images/icons/rightarrow.png" width="32" height="32" /></button>
                             <div class="scroll-table-ov">
-                                <table class="table table-striped table-bordered table-hover foo" style="width:150%;table-layout: fixed; border-radius:4px;">
+                                <table class="table table-striped table-bordered table-hover foo" style="width:100%;table-layout: fixed; border-radius:4px;">
                                     <thead>
                                         <tr class="table-hd">
-                                            <th style="width:2%!important"><input type="checkbox" name="select-all" id="select-all" /></th>
                                             <th style="width:2%!important">S.No</th>
                                             <th style="width:5%!important">Army No.</th>
                                             <th style="width:4%!important">Rank</th>
-                                            <th style="width:10%!important">Name</th>
-                                            <th style="width:12%!important">Address</th>
-                                            <th style="width:7%!important">Mobile No.</th>
-                                            <th style="width:7%!important">Identity Card No.</th>
-                                            <th style="width:7%!important">Eligibility Certificate</th>
-                                            <th style="text-align: center; width: 4%">Edit</th>
+                                            <th style="width:7%!important">Name</th>
+                                            <th style="width:5%!important">Visit Date</th>
+                                            <th style="width:12%!important">Visit Purpose</th>
                                         </tr>
                                     </thead>
                                     <tbody id="myTable">
@@ -260,22 +192,18 @@
                                             foreach (var item in Model.individuals)
                                             {
                                                 <tr>
-                                                    <td> <input type="checkbox" name="ID" value="@item.Id" class="custom-checkbox chkCheckBoxId" /> </td>
                                                     <td>@item.S_No</td>
                                                     <td>@item.Army_No</td>
                                                     <td>@item.Rank</td>
                                                     <td>@item.Name</td>
-                                                    <td>@item.Address</td>
-                                                    <td>@item.Mobile_No</td>
-                                                    <td>@item.IdentityCardNo</td>
-                                                    <td style="text-align:center;"><a href="JavaScript:void(0);" onclick="GetCertificate('@item.Army_No')" title="Edit"><img alt="Qries" src="~/images/icons/CertificateIcon.png" style="width: 25px; height:25px;"> </a> </td>
-                                                    <td style="text-align:center;"><a href="JavaScript:void(0);" onclick="GetDetails(@item.Id)" title="Edit"><img alt="Qries" src="~/images/icons/EditIcon.png" style="width: 25px; height:25px;"> </a> </td>
+                                                    <td>@item.VisitDate</td>
+                                                    <td>@item.VisitPurpose</td>
                                                 </tr>
                                             }
                                         }
                                         else
                                         {
-                                            <tr><td colspan="10" style="text-align:center"><b>No Record Found</b></td></tr>
+                                            <tr><td colspan="6" style="text-align:center"><b>No Record Found</b></td></tr>
                                         }
                                     </tbody>
                                 </table>
@@ -299,104 +227,8 @@
         </div>
     </div>
 </section>
-<div id="Uploadfile" class="modal fade" role="dialog" tabindex="-1" aria-labelledby="modalHeading" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header with-border">
-                <h5 class="modal-title box-title" id="modalHeading">Attach Excel File</h5>
-                @* <a href="https://snp-workstatus-uploadfiles-buket.s3.ap-south-1.amazonaws.com/Dev_SampleList.xlsx" title="Download Excel Format" style="position: relative;right: 60px;">
-                <img alt="close" src="~/images/icons/downloadIcon.png" width="40" height="32" />
-                </a> *@
-                <div class="pull-left">
 
-                    <button id="closeModalPopup" type="button" style="border: 0;background: 0;text-align: right;" data-bs-dismiss="modal" aria-label="Close">
-                        <img alt="close" src="~/images/icons/close.png" style="width:20%; border-radius:5px;" />
-                    </button>
-                </div>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="~/ESM/ImportFromExcel" enctype="multipart/form-data">
-                    <input type="hidden" name="Action" value="3" />
-                    <label><b>Sheet No.:</b></label>
-                    <input type="text" name="Sheet" class="form-control txtRequireds" id="Sheet" style="max-width: 100%; width:200px" maxlength="2" placeholder="Enter Sheet No." onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')" />
-                    <label><b>Upload File to store ESM Individual Records:</b></label>
-                    <input style="width:300px; max-width: 100%; position: absolute; opacity: 0;padding:6px" type="file" id="uploadnewfile" name="file" class="form-control" title=" " accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
-                    <div style="display:flex;">
-                        <button type="button" style="border: 1px solid lightgray; border-radius: 5px 0 0 5px; width: 20% !important">Select File</button>
-                        <input type="text" style="border: 1px solid lightgrey; border-radius: 0 5px 5px 0; width:210px; max-width: 100%;" id="UploadAttachments" value="" />
-                    </div>
-                    <div class="mt-upload">
-                        <button id="EditSave" type="submit" class="btn btn-sm brdr-1 " style="color: white; border: none; background-color: blue;box-shadow:none">Upload</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="modal fade" id="newOrg" tabindex="-1" aria-labelledby="modalOne" aria-hidden="true" data-bs-keyboard="false" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered portolo-popup-des" style="max-width:50%">
-        <div class="modal-content">
 
-            <div class="modal-header modalBlueHeaders">
-                <h5 class="lblTitle" style="color:black;padding-left:2%">Eligible Certificates</h5>
-                <div class="pull-left">
-                    <a id="addCertifiate" title="Add Eligibility Certificate" class="brdr-1 btn-sm" href="javascript:void(0);" onclick="ElgibilityCertificate();" style="position:relative;left:55%"> Add</a>
-                    <button id="closeModalPopup" type="button" title="Close" style="border: 0;background: 0;text-align: right;" data-bs-dismiss="modal" aria-label="Close">
-                        <img alt="close" src="~/images/icons/close.png" style="width:22%; border-radius:5px;" />
-                    </button>
-                </div>
-            </div>
-            <div id="custom_contents" class="modal-body">
-                @*       <label class="lblTitle1" style="color:black;padding-left:2%"></label> *@
-                <div class="row" style="margin:5px;">
-                    <table id="filetable" class="cedvel table table-striped table-bordered table-sm">
-                        <thead>
-                            <tr>
-                                <th>S.No.</th>
-                                <th>Army No.</th>
-                                <th>Certificate No.</th>
-                                <th>Certificate Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="filetbody">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="EligiblePopup" class="modal fade" role="dialog" tabindex="-1" aria-labelledby="modalHeading" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header with-border">
-                <h5 class="modal-title box-title" id="modalHeading">Add Eligibility Certificate</h5>
-                <div class="pull-left">
-                    <button id="closeModalPopup" type="button" style="border: 0;background: 0;text-align: right;" data-bs-dismiss="modal" aria-label="Close">
-                        <img alt="close" src="~/images/icons/close.png" style="width:20%; border-radius:5px;" />
-                    </button>
-                </div>
-            </div>
-            <div class="modal-body">
-                @*  <form method="post" action="~/ESM/ECSubmit" enctype="multipart/form-data"> *@
-                <input type="hidden" name="Army_No" id="ArmyNo" />
-                <div class="row">
-                    <div class="col-md-6">
-                        <label><b>Certificate No.:</b></label>
-                        <input type="text" name="Certificate_No" class="form-control txtRequired" id="Certificate_No" style="max-width: 100%;" />
-                    </div>
-                    <div class="col-md-6">
-                        <label><b>Certificate Date:</b></label>
-                        <input style=" max-width: 100%;" type="text" id="Date" name="Date" class="form-control txtRequired datetimepicker" onchange="OnchangeDate();" placeholder="DD/MM/YYYY">
-                    </div>
-                    <div class="mt-save" style="position:relative;left:35%">
-                        <button id="EditSave" type="button" class="btn btn-sm brdr-1 " style="color: white; border: none; background-color: blue;box-shadow:none" onclick="return validateInputs(this);">Save</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 <script src="~/Scripts/jquery.datetimepicker.full.min.js"></script>
 <script src="~/Scripts/jquery-moment.js"></script>
 <script type="text/javascript">
@@ -411,20 +243,17 @@
     function ElgibilityCertificate() {
         $('#EligiblePopup').modal('show');
         $('.modal-content').draggable();
-        $('#Date').val("");
-        $('#Certificate_No').val("");
     }
     function reset() {
         $('#Certificate_No').css('background-color', 'white');
         $('#Date').css('background-color', 'white');
     }
     function validateInputs(e) {
-        reset();
         var Certificate_No = $.trim($('#Certificate_No').val());
         var Date = $.trim($('#Date').val());
         var ArmyNo = $.trim($('#ArmyNo').val());
         var error = "";
-        if (Certificate_No == "") {
+        if (Army_No == "") {
             error += "&#9679 Enter Eligibility Certificate No. <br>";
             $('#Certificate_No').css('background-color', 'yellow');
         }
@@ -564,7 +393,7 @@
     };
     function ExportToExcelLookUp() {
         var x = document.getElementById("Army_No").value;
-        window.location.href = "/ESM/Records?Excel=1&Army_No=" + x;
+        window.location.href = "/ESM/VisitLogs?Excel=1&Army_No=" + x;
     }
     function dropDownYear(y) {
         var selectyear = $("#dropDownYear1 option:selected").val();

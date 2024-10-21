@@ -8,7 +8,7 @@
 
 <script>
     function GetDetails(id) {
-        window.location.href = "/MailIn_Out/EditMail?id=" + id;
+        window.location.href = "/MailIn_Out/EditInMail?id=" + id;
     }
 </script>
 <script type="text/javascript">
@@ -48,6 +48,7 @@
         var ids = checklist.join(", ");
         var arrayIds = ids.split(',');
         var count = arrayIds.length;
+        
         var statement = count == 1 ? "row" : "rows";
         if (ids == "") {
             alertify.alert("Select any row and try again");
@@ -60,8 +61,10 @@
             alertify.confirm('Confirm delete selected ' + statement + '?', function (e) {
                 if (e) {
                     $.ajax({
+                        datatype: 'json',
                         url: "/MailIn_Out/DeleteRecords",
-                        data: { ids: ids },
+                        data: { "ids": ids, "act": 4 },
+                        async: false,
                         success: function (res) {
                             console.log(res);
                             if (res == "true") {
@@ -187,20 +190,20 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="box box-primary control-icons pt-0">
-                    <form action="~/MailIn_Out/Records" method="post" enctype="multipart/form-data">
+                    <form action="~/MailIn_Out/InRecords" method="post" enctype="multipart/form-data">
                         <div class="box-header ">
                             <h2 class="box-title">@ViewBag.PageHeading</h2>
                             <a onclick="ExportToExcelLookUp()" title="Download Excel">
                                 <img src="~/images/icons/excel_icon.png" class="nav-icons-port" />
                             </a>
-                            <a href="~/MailIn_Out/Records"><img src="~/images/icons/Refresh.png" class="nav-icons-port" title="Reset" /></a>
+                            <a href="~/MailIn_Out/InRecords"><img src="~/images/icons/Refresh.png" class="nav-icons-port" title="Reset" /></a>
                             <button type="submit" value="Search" title="Search" style="border-color: white;border: none;background:none">
                                 <img src="~/images/icons/search.png" class="nav-icons-port" />
                             </button>
                             <div class="controls">
                                 @if (HttpContextAccessor.HttpContext?.Session.GetInt32("IsAdmin") == 1 || HttpContextAccessor.HttpContext?.Session.GetInt32("IsSuperAdmin") == 1)
                                 {
-                                    <button type="button" value="" class="brdr-1 btn-sm" data-toggle="modal" data-target="#Uploadfile" onclick="Openform();">Upload File</button>
+                                    @* <button type="button" value="" class="brdr-1 btn-sm" data-toggle="modal" data-target="#Uploadfile" onclick="Openform();">Upload File</button> *@
                                     <button type="button" value="Delete" class="brdr-1 btn-sm" onclick="return alertMe();">Delete</button>
                                 }
                                 <a id="btnBack" class="brdr-1 btn-sm" href="javascript:void(0);" onclick="goBack()"> Return</a>
@@ -225,8 +228,8 @@
                                     </select>
                                 </div>
                                 <div class="col-3">
-                                    <label style="font-weight:bold; font-size:15px;">Service No.:</label>
-                                    @Html.TextBoxFor(m => m.Service_No, null, new { @class = "form-control d-inline-block", @placeholder = "Enter Service No.", @style = "max-width:100%;width:100%;" })
+                                    <label style="font-weight:bold; font-size:15px;">Army No.:</label>
+                                    @Html.TextBoxFor(m => m.Service_No, null, new { @class = "form-control d-inline-block", @placeholder = "Enter Army No.", @style = "max-width:100%;width:100%;" })
                                 </div>
                                 <div class="col-3">
                                     <label style="font-weight:bold; font-size:15px;">Letter No.:</label>
@@ -250,12 +253,12 @@
                                             <th style="width:4%!important">File Name</th>
                                             <th style="width:6%!important">Letter No</th>
                                             <th style="width:6%!important">Letter Date</th>
-                                            <th style="width:6%!important">Mail Out Date</th>
-                                            <th style="width:6%!important">Service No</th>
+                                            <th style="width:6%!important">Army No.</th>
                                             <th style="width:10%!important">Name</th>
                                             <th style="width:6%!important">Rank</th>
-                                            <th style="width:10%!important">To Whom</th>
+                                            <th style="width:8%!important">To Whom</th>
                                             <th style="width:10%!important">Subject</th>
+                                             <th style="width:10%!important">Letter File Placed</th>
                                             <th style="text-align: center; width: 2%">Edit</th>
                                         </tr>
                                     </thead>
@@ -270,12 +273,12 @@
                                                     <td>@item.Item</td>
                                                     <td>@item.Letter_No</td>
                                                     <td>@item.Letter_Date</td>
-                                                    <td>@item.MailOut_Date</td>
                                                     <td>@item.Service_No</td>
                                                     <td>@item.Name</td>
                                                     <td>@item.Rank</td>
                                                     <td>@item.ToWhom</td>
                                                     <td>@item.Subject</td>
+                                                    <td>@item.LetterPlaced_File</td>
                                                     <td style="text-align:center;"><a href="JavaScript:void(0);" onclick="GetDetails(@item.Mail_Id)" title="Edit"><img alt="Qries" src="~/images/icons/EditIcon.png" style="width: 25px; height:25px;"> </a> </td>
                                                 </tr>
                                             }
@@ -327,7 +330,7 @@
                     <label><b>Sheet No.:</b></label>
                     <input type="text" name="Sheet" class="form-control txtRequireds" id="Sheet" style="max-width: 100%; width:200px" maxlength="2" placeholder="Enter Sheet No." onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')" />
 
-                    <label><b>Upload File to store In/Out Mail Records:</b></label>
+                    <label><b>Upload File to store In Mail Records:</b></label>
                     <input style="width:300px; max-width: 100%; position: absolute; opacity: 0;padding:6px" type="file" id="uploadnewfile" name="file" class="form-control" title=" " accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
                     <div style="display:flex;">
                         <button type="button" style="border: 1px solid lightgray; border-radius: 5px 0 0 5px; width: 20% !important">Select File</button>
@@ -437,7 +440,7 @@
         var z = document.getElementById("fileNames").value;
         var s = document.getElementById("Service_No").value;
         var l = document.getElementById("Letter_No").value;
-        window.location.href = "/MailIn_Out/Records?Excel=1&Year=" + x + "&Month=" + y + "&Item=" + z + "&Service_No=" + s + "&Letter_No=" + l;
+        window.location.href = "/MailIn_Out/InRecords?Excel=1&Year=" + x + "&Month=" + y + "&Item=" + z + "&Service_No=" + s + "&Letter_No=" + l;
     }
 </script>
 
@@ -450,13 +453,6 @@
 <script>
     $(document).ready(function () {
         $("input:text,form").attr("autocomplete", "off");
-        // if (isAdmin != 1 && isGlobalAdmin != 1 && isSuperAdmin != 1) {
-        //     $('.foo tr > *:nth-child(3)').hide();
-        //     $('.foo tr > *:nth-child(1)').hide();
-        // }
-        // else {
-        //     $('.foo tr > *:nth-child(14)').hide();
-        // }
     });
 
     $('#closeModal').click(function () {
@@ -541,9 +537,9 @@
     <script type="text/javascript">
         $(document).ready(function () {
             alertify.alert("@ViewData["Message"]");
-            var alertID = document.getElementById('alertify-ok'); if (alertID) {
+            @* var alertID = document.getElementById('alertify-ok'); if (alertID) {
                 setTimeout(function () { alertID.click(); }, 10000);
-            }
+            } *@
         });
     </script>
 }

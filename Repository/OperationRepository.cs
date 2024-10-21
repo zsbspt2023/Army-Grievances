@@ -42,6 +42,8 @@ namespace ArmyGrievances.Repository
             {
                 new SqlParameter("@ID",grievanceModal.Id),
                 new SqlParameter("@Individual_Particular",grievanceModal.Individual_Particular),
+                new SqlParameter("@ArmyNo",grievanceModal.ArmyNo),
+                new SqlParameter("@Name",grievanceModal.Name),
                 new SqlParameter("@Grievance_ReceptDate", grievanceModal.Grievance_ReceptDate),
                 new SqlParameter("@Grienvance_Subject", grievanceModal.Grienvance_Subject),
                 new SqlParameter("@Sent_Area", grievanceModal.Sent_Area),
@@ -71,30 +73,52 @@ namespace ArmyGrievances.Repository
             List<IndividualModal> obj = new List<IndividualModal>();
             SqlParameter[] parameters = new SqlParameter[]
             {
-                   new SqlParameter("@Action",3),
+                   new SqlParameter("@Action",individual.Action),
                    new SqlParameter("@Id", individual.Id),
-                   new SqlParameter("@Army_No", individual.Army_No)
+                   new SqlParameter("@Army_No", individual.Army_No?.Trim())
             };
 
             DataTable dt = await SqlHelper.ExecuteTableAsync("SP_GETQueries", CommandType.StoredProcedure, parameters, configuration);
+
             if (dt.Rows.Count > 0)
             {
                 int i = 1;
-                foreach (DataRow dr in dt.Rows)
+                if (individual.Action == 3)
                 {
-                    obj.Add(new IndividualModal
+                    foreach (DataRow dr in dt.Rows)
                     {
-                        S_No = i++,
-                        Id = Convert.ToInt32(dr["Id"]),
-                        Army_No = dr["Army_No"].ToString(),
-                        Rank = dr["Rank"].ToString(),
-                        Name = dr["Name"].ToString(),
-                        Address = dr["Address"].ToString(),
-                        Mobile_No = dr["Mobile_No"].ToString(),
-                        IdentityCardNo = dr["IdentityCardNo"].ToString(),
-                    });
+                        obj.Add(new IndividualModal
+                        {
+                            S_No = i++,
+                            Id = Convert.ToInt32(dr["Id"]),
+                            Army_No = dr["Army_No"].ToString(),
+                            Rank = dr["Rank"].ToString(),
+                            Name = dr["Name"].ToString(),
+                            Address = dr["Address"].ToString(),
+                            Mobile_No = dr["Mobile_No"].ToString(),
+                            IdentityCardNo = dr["IdentityCardNo"].ToString(),
+                            VisitPurpose = dr["VisitPurpose"].ToString(),
+                        });
+                    }
+                    obj1.individuals = obj;
                 }
-                obj1.individuals = obj;
+                else
+                {
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        obj.Add(new IndividualModal
+                        {
+                            S_No = i++,
+                            Id = Convert.ToInt32(dr["Id"]),
+                            Army_No = dr["Army_No"].ToString(),
+                            Rank = dr["Rank"].ToString(),
+                            Name = dr["Name"].ToString(),
+                            VisitDate = dr["VisitorDate"].ToString(),
+                            VisitPurpose = dr["VisitPurpose"].ToString(),
+                        });
+                    }
+                    obj1.individuals = obj;
+                }
             }
             else
             {
@@ -143,8 +167,9 @@ namespace ArmyGrievances.Repository
                 new SqlParameter("@Rank", individual.Rank),
                 new SqlParameter("@Name", individual.Name),
                 new SqlParameter("@Address", individual.Address),
-                new SqlParameter("@Regt_Record",individual.Mobile_No),
+                new SqlParameter("@Mobile_No",individual.Mobile_No),
                 new SqlParameter("@IdentityCardNo",individual.IdentityCardNo),
+                new SqlParameter("@VisitPurpose",individual.VisitPurpose),
                 new SqlParameter("@Action", individual.Action),
             };
             bool isInsert = await SqlHelper.ExecuteNonQueryAsync("Sp_IndividualManagement", CommandType.StoredProcedure, parameters, configuration);
@@ -165,7 +190,7 @@ namespace ArmyGrievances.Repository
         {
             StatusCode obj = new StatusCode();
             SqlParameter[] parameters = new SqlParameter[]
-            {               
+            {
                 new SqlParameter("@Army_No",certificate.Army_No),
                 new SqlParameter("@CertificateNo", certificate.Certificate_No),
                 new SqlParameter("@Date", certificate.Date),
@@ -189,20 +214,16 @@ namespace ArmyGrievances.Repository
             GrievanceModal obj1 = new GrievanceModal();
             StatusCode obj2 = new StatusCode();
             List<GrievanceModal> obj = new List<GrievanceModal>();
-
-            //DateTime datevalue = (Convert.ToDateTime(grievance.Grievance_ReceptDate));
-
-            //string dy = datevalue.Day.ToString();
-            //string mn = datevalue.Month.ToString();
-            //string yy = datevalue.Year.ToString();
             obj1.Year = grievance.Year;
             obj1.Month = grievance.Month;
+            obj1.ArmyNo = grievance.ArmyNo;
             SqlParameter[] parameters = new SqlParameter[]
             {
                    new SqlParameter("@Action",1),
                    new SqlParameter("@Month", grievance.Month),
                    new SqlParameter("@Year",grievance.Year),
                    new SqlParameter("@Regt_Records",grievance.Regt_Record),
+                   new SqlParameter("Army_No", grievance.ArmyNo),
                    new SqlParameter("@Id", grievance.Id)
             };
 
@@ -216,6 +237,8 @@ namespace ArmyGrievances.Repository
                     {
                         S_No = i++,
                         Id = Convert.ToInt32(dr["id"]),
+                        ArmyNo = dr["ArmyNo"].ToString(),
+                        Name = dr["Name"].ToString(),
                         Individual_Particular = dr["Individual_Particular"].ToString(),
                         Grievance_ReceptDate = dr["ReceptDate"].ToString(),
                         Grienvance_Subject = dr["Grienvance_Subject"].ToString(),
@@ -240,10 +263,10 @@ namespace ArmyGrievances.Repository
             obj.Status = "false";
             SqlParameter[] parameters = new SqlParameter[]
             {
-                new SqlParameter("@ArmyNo",id)
+                new SqlParameter("@ArmyNo",id.Trim())
 
             };
-            DataTable dt = await SqlHelper.ExecuteTableAsync("Select * from tbl_ESMIndividuals where Army_No like CONCAT('%',@ArmyNo,'%')", CommandType.Text, parameters, configuration);
+            DataTable dt = await SqlHelper.ExecuteTableAsync("Select * from tbl_ESMIndividuals where Army_No = @ArmyNo", CommandType.Text, parameters, configuration);
             if (dt.Rows.Count > 0)
             {
                 obj.Status = "true";
@@ -252,16 +275,16 @@ namespace ArmyGrievances.Repository
             return obj;
         }
 
-        public async Task<StatusCode> SP_CheckExistServiceNo(string id, IConfiguration configuration)
+        public async Task<StatusCode> SP_CheckExistServiceNo(string id, string tbl, IConfiguration configuration)
         {
             StatusCode obj = new StatusCode();
             obj.Status = "false";
             SqlParameter[] parameters = new SqlParameter[]
             {
-                new SqlParameter("@Service_No",id)
-
+                new SqlParameter("@Service_No",id.Trim())
             };
-            DataTable dt = await SqlHelper.ExecuteTableAsync("Select * from tbl_MailIn_Out where Service_No like CONCAT('%',@Service_No,'%')", CommandType.Text, parameters, configuration);
+
+            DataTable dt = await SqlHelper.ExecuteTableAsync("Select * from " + tbl + " where Service_No = @Service_No", CommandType.Text, parameters, configuration);
             if (dt.Rows.Count > 0)
             {
                 obj.Status = "true";
@@ -272,36 +295,46 @@ namespace ArmyGrievances.Repository
         public async Task<StatusCode> Sp_MailManagement(MainIn_OutModal main, IConfiguration configuration)
         {
             StatusCode obj = new StatusCode();
-            SqlParameter[] parameters = new SqlParameter[]
+            try
             {
+                SqlParameter[] parameters = new SqlParameter[]
+                {
                 new SqlParameter("@Id", main.Mail_Id),
                 new SqlParameter("@Item",main.Item),
                 new SqlParameter("@MailOut_Date", main.MailOut_Date),
-                new SqlParameter("@Subject", main.Subject),
-                new SqlParameter("@ToWhom", main.ToWhom),
+                new SqlParameter("@Subject", main.Subject?.Trim()),
+                new SqlParameter("@ToWhom", main.ToWhom?.Trim()),
                 new SqlParameter("@Diary_No",main.Diary_No),
                 new SqlParameter("@ZSB_MemoNo",main.ZSB_MemoNo),
-                new SqlParameter("@Service_No",main.Service_No),
-                new SqlParameter("@Name", main.Name),
+                new SqlParameter("@Service_No",main.Service_No?.Trim()),
+                new SqlParameter("@Name", main.Name?.Trim()),
                 new SqlParameter("@Recieving_Date", main.Recieving_Date),
                 new SqlParameter("@Addressed_To",main.Addressed_To),
                 new SqlParameter("@Copy_To",main.Copy_To),
-                new SqlParameter("@Letter_No",main.Letter_No),
+                new SqlParameter("@Letter_No",main.Letter_No?.Trim()),
                 new SqlParameter("@Letter_Date",main.Letter_Date),
-                new SqlParameter("@Rank",main.Rank),
+                new SqlParameter("@Letter_FilePlaced",main.LetterPlaced_File),
+                new SqlParameter("@Rank",main.Rank?.Trim()),
+                new SqlParameter("@Tab",main.Table),
                 new SqlParameter("@Action", main.Action),
-            };
-            bool isInsert = await SqlHelper.ExecuteNonQueryAsync("Sp_MailManagement", CommandType.StoredProcedure, parameters, configuration);
-            if (isInsert)
-            {
-                obj.Status = "Ok";
-                obj.ErrorMsg = "In/Out Mail Record";
-                obj.ErrorMsg += main.Action == 1 ? " added Successfully!" : " updated Successfully!";
+                };
+                bool isInsert = await SqlHelper.ExecuteNonQueryAsync("Sp_MailManagement", CommandType.StoredProcedure, parameters, configuration);
+                if (isInsert)
+                {
+                    obj.Status = "Ok";
+                    obj.ErrorMsg = "In/Out Mail Record";
+                    obj.ErrorMsg += main.Action == 1 ? " added Successfully!" : " updated Successfully!";
+                }
+                else
+                {
+                    obj.Status = "Bad Request";
+                    obj.ErrorMsg = "Internal Request Error";
+                }
             }
-            else
+            catch (Exception ex)
             {
                 obj.Status = "Bad Request";
-                obj.ErrorMsg = "Internal Request Error";
+                obj.ErrorMsg = ex.Message;
             }
             return obj;
         }
@@ -317,13 +350,14 @@ namespace ArmyGrievances.Repository
             obj1.Item = mainIn_Out.Item;
             SqlParameter[] parameters = new SqlParameter[]
             {
-                  new SqlParameter("@Action",2),
+                  new SqlParameter("@Action",mainIn_Out.Action),
                   new SqlParameter("@Month", mainIn_Out.Month),
                   new SqlParameter("@Year",mainIn_Out.Year),
                   new SqlParameter("@Id",mainIn_Out.Mail_Id),
                   new SqlParameter("@Service_No",mainIn_Out.Service_No?.Trim()),
                   new SqlParameter("@Letter_No",mainIn_Out.Letter_No?.Trim()),
                   new SqlParameter("@Item",mainIn_Out.Item),
+                  new SqlParameter("@Regt_Records",mainIn_Out.LetterPlaced_File),
             };
 
             DataTable dt = await SqlHelper.ExecuteTableAsync("SP_GETQueries", CommandType.StoredProcedure, parameters, configuration);
@@ -350,7 +384,7 @@ namespace ArmyGrievances.Repository
                         Copy_To = dr["Copy_To"].ToString(),
                         Letter_No = dr["Letter_No"].ToString(),
                         Letter_Date = !string.IsNullOrEmpty(dr["LetterDate"].ToString()) ? dr["LetterDate"].ToString() : "",
-                        LetterPlaced_File = !string.IsNullOrEmpty(dr["LetterPlaced_File"].ToString()) ? Convert.ToBoolean(dr["LetterPlaced_File"]) : false,
+                        LetterPlaced_File = dr["LetterPlaced_File"].ToString()
                     });
                 }
                 obj1.mainIn_Outs = obj;
@@ -400,6 +434,7 @@ namespace ArmyGrievances.Repository
             if (Action == 1) { query = "Delete from tbl_GrievanceRecords where id = @id"; }
             else if (Action == 2) { query = "Delete from tbl_MailIn_Out where Mail_Id = @id"; }
             else if (Action == 3) { query = "Delete from tbl_ESMIndividuals where Id = @id"; }
+            else if (Action == 4) { query = "Delete from tbl_MailIn where Mail_Id = @id"; }
             foreach (var id in Recordids)
             {
                 SqlParameter[] parameters = new SqlParameter[]
@@ -416,7 +451,26 @@ namespace ArmyGrievances.Repository
 
             return obj;
         }
+        public async Task<List<SelectionList>> SP_GetSelectionList(string id, IConfiguration configuration)
+        {
+            List<SelectionList> obj = new List<SelectionList>();
+            obj.Add(new SelectionList { Text = "--Select--", Value = "0" });
 
+            SqlParameter[] parameters = new SqlParameter[]
+            {
+                new SqlParameter("@id",id),
+            };
+            DataTable dt = await SqlHelper.ExecuteTableAsync("select TRIM(UPPER(RecordName)) Records from tbl_Records order by Records", CommandType.Text, parameters, configuration);
+            foreach (DataRow dr in dt.Rows)
+            {
+                obj.Add(new SelectionList
+                {
+                    Text = dr["Records"].ToString(),
+                    Value = dr["Records"].ToString()
+                });
+            }
+            return obj;
+        }
         public static string GetMD5Hash(string theInput)
         {
             StringBuilder sBuilder = new StringBuilder();

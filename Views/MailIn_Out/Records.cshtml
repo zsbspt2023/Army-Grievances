@@ -48,6 +48,7 @@
         var ids = checklist.join(", ");
         var arrayIds = ids.split(',');
         var count = arrayIds.length;
+
         var statement = count == 1 ? "row" : "rows";
         if (ids == "") {
             alertify.alert("Select any row and try again");
@@ -60,8 +61,10 @@
             alertify.confirm('Confirm delete selected ' + statement + '?', function (e) {
                 if (e) {
                     $.ajax({
+                        datatype: 'json',
                         url: "/MailIn_Out/DeleteRecords",
-                        data: { ids: ids },
+                        data: { "ids": ids, "act": 2 },
+                        async: false,
                         success: function (res) {
                             console.log(res);
                             if (res == "true") {
@@ -200,7 +203,7 @@
                             <div class="controls">
                                 @if (HttpContextAccessor.HttpContext?.Session.GetInt32("IsAdmin") == 1 || HttpContextAccessor.HttpContext?.Session.GetInt32("IsSuperAdmin") == 1)
                                 {
-                                    <button type="button" value="" class="brdr-1 btn-sm" data-toggle="modal" data-target="#Uploadfile" onclick="Openform();">Upload File</button>
+                                    @* <button type="button" value="" class="brdr-1 btn-sm" data-toggle="modal" data-target="#Uploadfile" onclick="Openform();">Upload File</button> *@
                                     <button type="button" value="Delete" class="brdr-1 btn-sm" onclick="return alertMe();">Delete</button>
                                 }
                                 <a id="btnBack" class="brdr-1 btn-sm" href="javascript:void(0);" onclick="goBack()"> Return</a>
@@ -225,8 +228,8 @@
                                     </select>
                                 </div>
                                 <div class="col-3">
-                                    <label style="font-weight:bold; font-size:15px;">Service No.:</label>
-                                    @Html.TextBoxFor(m => m.Service_No, null, new { @class = "form-control d-inline-block", @placeholder = "Enter Service No.", @style = "max-width:100%;width:100%;" })
+                                    <label style="font-weight:bold; font-size:15px;">Army No.:</label>
+                                    @Html.TextBoxFor(m => m.Service_No, null, new { @class = "form-control d-inline-block", @placeholder = "Enter Army No.", @style = "max-width:100%;width:100%;" })
                                 </div>
                                 <div class="col-3">
                                     <label style="font-weight:bold; font-size:15px;">Letter No.:</label>
@@ -249,26 +252,13 @@
                                             <th style="width:1.5%!important">S.No</th>
                                             <th style="width:4%!important">File Name</th>
                                             <th style="width:6%!important">Letter No</th>
-                                            <th style="width:6%!important">Letter Date</th>
                                             <th style="width:6%!important">Mail Out Date</th>
-                                            <th style="width:6%!important">Service No</th>
+                                            <th style="width:6%!important">Army No</th>
                                             <th style="width:10%!important">Name</th>
                                             <th style="width:6%!important">Rank</th>
                                             <th style="width:10%!important">To Whom</th>
-                                            @* <th style="width:10%!important">Recieve From</th> *@
                                             <th style="width:10%!important">Subject</th>
                                             <th style="text-align: center; width: 2%">Edit</th>
-                                            @* <th style="width:7%!important">ZSB Memo No</th>
-                                            <th style="width:5%!important">Diary No.</th>
-
-
-                                            <th style="width:8%!important">Recieving Date</th>
-                                            <th style="width:7%!important">To Addressed </th> *@
-                                            @* <th style="width:7%!important">Copy To</th> *@
-
-
-                                            @*                                             <th style="width:6%!important">Letter Placed in File</th> *@
-
                                         </tr>
                                     </thead>
                                     <tbody id="myTable">
@@ -281,13 +271,11 @@
                                                     <td>@item.S_No</td>
                                                     <td>@item.Item</td>
                                                     <td>@item.Letter_No</td>
-                                                    <td>@item.Letter_Date</td>
                                                     <td>@item.MailOut_Date</td>
                                                     <td>@item.Service_No</td>
                                                     <td>@item.Name</td>
                                                     <td>@item.Rank</td>
                                                     <td>@item.ToWhom</td>
-                                                    @*  <td>@item.Addressed_To</td> *@
                                                     <td>@item.Subject</td>
                                                     <td style="text-align:center;"><a href="JavaScript:void(0);" onclick="GetDetails(@item.Mail_Id)" title="Edit"><img alt="Qries" src="~/images/icons/EditIcon.png" style="width: 25px; height:25px;"> </a> </td>
                                                 </tr>
@@ -295,7 +283,7 @@
                                         }
                                         else
                                         {
-                                            <tr><td colspan="12" style="text-align:center"><b>No Record Found</b></td></tr>
+                                            <tr><td colspan="11" style="text-align:center"><b>No Record Found</b></td></tr>
                                         }
                                     </tbody>
                                 </table>

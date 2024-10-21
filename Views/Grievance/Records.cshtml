@@ -46,10 +46,10 @@
             if (this.value != "on")
                 checklist.push(this.value);
         });
-        var ids = checklist.join(", ");
+        var ids = checklist.join(",");
         var arrayIds = ids.split(',');
         var count = arrayIds.length;
-        var statement = count == 1 ? "row":"rows";
+        var statement = count == 1 ? "row" : "rows";
 
         if (ids == "") {
             alertify.alert("Select any row and try again");
@@ -59,7 +59,7 @@
             return false;
         }
         else {
-            alertify.confirm('Confirm delete selected ' +statement+ '?', function (e) {
+            alertify.confirm('Confirm delete selected ' + statement + '?', function (e) {
                 if (e) {
                     $.ajax({
                         url: "/Grievance/DeleteRecords",
@@ -166,6 +166,10 @@
         font-size: 14px !important;
     }
 
+    .select2-selection--single {
+        border-left: none !important;
+    }
+
     .modalBlueHeaders {
         padding: 5px;
         background-color: #ADD8E6;
@@ -210,17 +214,31 @@
                         </div>
                         <div class="control-icons" style="padding:0;">
                             <div class="row">
-                                <div class="col-6">
+                                <div class="col-3">
                                     <label style="font-weight:bold; font-size:15px;">Recept Year/Month:</label><br />
-                                    <select class="form-select" id="dropDownYear1" name="Year" onchange="dropDownYear(0);">
+                                    <select class="form-select" id="dropDownYear1" name="Year" onchange="dropDownYear(0);" style="width:40%">
                                         <option value="0">-Year-</option>
                                     </select>
-                                    <select class="form-select" id="dropDownYearMonth" name="Month">
+                                    <select class="form-select" id="dropDownYearMonth" name="Month" style="width:45%">
                                         <option value="0">-Month-</option>
                                     </select>
                                 </div>
-                                <div class="col-6" style="padding-top:21px!important;">
-                                    
+                                <div class="col-3">
+                                    @if (HttpContextAccessor.HttpContext?.Session.GetInt32("IsAdmin") == 1 || HttpContextAccessor.HttpContext?.Session.GetInt32("IsSuperAdmin") == 1)
+                                    {
+                                        <label style="font-weight:bold; font-size:15px;">Regt. Records:</label>
+                                        @Html.DropDownList("Regt_Record", new SelectList(ViewBag.RecordsDropdown, "Value", "Text"), new
+                                            {
+                                                @style = "max-width:100%;width:100%;",
+                                                @id = "RecordsDropdown",
+                                                @class = "form-control form-select",
+                                                @title = "Records Dropdown",
+                                            })
+                                    }
+                                </div>
+                                <div class="col-3">
+                                    <label style="font-weight:bold; font-size:15px;">Army No.:</label>
+                                    @Html.TextBox("ArmyNo", null, new { @class = "form-control d-inline-block", @placeholder = "Enter Army No.", @style = "max-width:100%;width:100%;" })
                                 </div>
                             </div>
                         </div>
@@ -237,7 +255,8 @@
                                         <tr class="table-hd">
                                             <th style="width:2%!important"><input type="checkbox" name="select-all" onchange="Checkboxchange(this);" id="select-all" /></th>
                                             <th style="width:3%!important">S.No</th>
-                                            <th style="width:7%!important">Particular of Individual</th>
+                                            <th style="width:6%!important">Army No.</th>
+                                            <th style="width:10%!important">Name</th>
                                             <th style="width:9%!important">Grievance Recept Date</th>
                                             <th style="width:10%!important">Grienvance Subject</th>
                                             <th style="width:10%!important">Sent to Whom</th>
@@ -255,7 +274,8 @@
                                                 <tr>
                                                     <td> <input type="checkbox" name="ID" value="@item.Id" class="custom-checkbox chkCheckBoxId" /> </td>
                                                     <td>@item.S_No</td>
-                                                    <td>@item.Individual_Particular</td>
+                                                    <td>@item.ArmyNo</td>
+                                                    <td>@item.Name</td>
                                                     <td>@item.Grievance_ReceptDate</td>
                                                     <td>@item.Grienvance_Subject</td>
                                                     <td>@item.Sent_Area</td>
@@ -390,7 +410,7 @@
             perPage: 25,
             pageNo: @(ViewBag.page == null ? 0 : ViewBag.page - 1)
 
-        });
+                });
     });
 </script>
 <script>
@@ -422,7 +442,9 @@
     function ExportToExcelLookUp() {
         var x = document.getElementById("dropDownYear1").value;
         var y = document.getElementById("dropDownYearMonth").value;
-        window.location.href = "/Grievance/Records?Excel=1&Year=" + x + "&Month=" + y;
+        var z = $("#RecordsDropdown option:selected").val();
+        var a = document.getElementById("ArmyNo").value;
+        window.location.href = "/Grievance/Records?Excel=1&Year=" + x + "&Month=" + y + "&Regt_Record=" + z + "ArmyNo=" + a;
     }
     function dropDownYear(y) {
         var selectyear = $("#dropDownYear1 option:selected").val();
@@ -466,15 +488,21 @@
 </script>
 
 <script>
+
     $(document).ready(function () {
         $("input:text,form").attr("autocomplete", "off");
-        // if (isAdmin != 1 && isGlobalAdmin != 1 && isSuperAdmin != 1) {
-        //     $('.foo tr > *:nth-child(3)').hide();
-        //     $('.foo tr > *:nth-child(1)').hide();
-        // }
-        // else {
-        //     $('.foo tr > *:nth-child(14)').hide();
-        // }
+        function matchStart(term, text) {
+            if (text.toUpperCase().indexOf(term.toUpperCase()) > -1) {
+                return true;
+            }
+            return false;
+        }
+
+        $.fn.select2.amd.require(['select2/compat/matcher'], function (oldMatcher) {
+            $("#RecordsDropdown").select2({
+                matcher: oldMatcher(matchStart)
+            })
+        });
     });
 
     $('#closeModal').click(function () {
@@ -482,24 +510,24 @@
     });
 </script>
 <script type="text/javascript">
-        var currentYear = new Date().getFullYear();
-        var currentMonth = new Date().getMonth();
-        var cascadedDropDownMonthId = "#dropDownYearMonth";
-        var year = @Html.Raw(Json.Serialize(Model.Year));
-        var Selectmonth = @Html.Raw(Json.Serialize(Model.Month));
+    var currentYear = new Date().getFullYear();
+    var currentMonth = new Date().getMonth();
+    var cascadedDropDownMonthId = "#dropDownYearMonth";
+    var year = @Html.Raw(Json.Serialize(Model.Year));
+    var Selectmonth = @Html.Raw(Json.Serialize(Model.Month));
 
-        //Adding Last 10 Years to Year Drop Down
-        for (var i = currentYear; i > currentYear - 20; i--) {
-            if (year == i) {
-                $("#dropDownYear1").append('<option value="' + i.toString() + '" selected="selected">' + i.toString() + '</option>');
-            } else {
-                $("#dropDownYear1").append('<option value="' + i.toString() + '">' + i.toString() + '</option>');
-            }
-
+    //Adding Last 10 Years to Year Drop Down
+    for (var i = currentYear; i > currentYear - 20; i--) {
+        if (year == i) {
+            $("#dropDownYear1").append('<option value="' + i.toString() + '" selected="selected">' + i.toString() + '</option>');
+        } else {
+            $("#dropDownYear1").append('<option value="' + i.toString() + '">' + i.toString() + '</option>');
         }
-        //Disabling Month Dropdown in case of invalid Selections.
-        $(cascadedDropDownMonthId).prop("disabled", true);
-    dropDownYear(year);    
+
+    }
+    //Disabling Month Dropdown in case of invalid Selections.
+    $(cascadedDropDownMonthId).prop("disabled", true);
+    dropDownYear(year);
 </script>
 
 @if (ViewData["Message"] != null)
