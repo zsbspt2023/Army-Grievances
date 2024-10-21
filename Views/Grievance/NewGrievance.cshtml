@@ -74,11 +74,23 @@
                         <input type="hidden" class="form-control" name="Id" value="@Model.Id" />
 
                         <div class="row p-2">
-                            <div class="row">
+                            @* <div class="row">
                                <div class="col-md-3" style="text-align: right;">
                                     <label class=" lbllarge mt-1 me-1 p-0" for="Individual_Particular" >Particular of Individual:</label>
                                </div>
                                 <input type="text" class="txtRequired form-control"  id="Individual_Particular" name="Individual_Particular" value="@Model.Individual_Particular" />
+                            </div> *@
+                            <div class="row">
+                                <div class="col-md-3" style="text-align:right;">
+                                    <label class=" lbllarge mt-1 me-1">Army No:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="ArmyNo" name="ArmyNo" value="@Model.ArmyNo" />
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-3" style="text-align:right;">
+                                    <label class=" lbllarge mt-1 me-1">Name:</label>
+                                </div>
+                                <input type="text" class="form-control txtRequired" id="Name" name="Name" value="@Model.Name" />
                             </div>
                             <div class="row mt-2">
                                 <div class="col-md-3" style="text-align:right;">
@@ -163,7 +175,7 @@
 </script>
 <script>
     function reset() {
-        $('#Individual_Particular').css('background-color', 'white');
+        $('#ArmyNo').css('background-color', 'white');
         $('#Grievance_ReceptDate').css('background-color', 'white');
         $('#Grienvance_Subject').css('background-color', 'white');
         $('#Sent_Area').css('background-color', 'white');
@@ -175,7 +187,9 @@
 
     function validateInputs(e) {
         reset();
-        var Individual_Particular = $.trim($('#Individual_Particular').val());
+        //var Individual_Particular = $.trim($('#Individual_Particular').val());
+        //var Name = $.trim($('#Name').val());
+        var ArmyNo = $.trim($('#ArmyNo').val());
         var Grievance_ReceptDate = $.trim($('#Grievance_ReceptDate').val());
         var Grienvance_Subject = $.trim($('#Grienvance_Subject').val());
         var Sent_Area = $.trim($('#Sent_Area').val());
@@ -183,9 +197,25 @@
         var ZSB_MemoNo = $.trim($('#ZSB_MemoNo').val());
         var ZSB_MemoDate = $.trim($('#ZSB_MemoDate').val());
         var error = "";
-        if (Individual_Particular == "") {
-            error += "&#9679 Enter Particular of Individual <br>";
-            $('#Individual_Particular').css('background-color', 'yellow');
+        if (ArmyNo == "") {
+            error += "&#9679 Enter Army No <br>";
+            $('#ArmyNo').css('background-color', 'yellow');
+        }
+        else if (ArmyNo != "") {
+            var valid = "false";
+            $.ajax({
+                url: "/ESM/checkExistArmyNo",
+                datatype: 'json',
+                data: { "ArmyNo": ArmyNo },
+                async: false,
+                success: function (response) {
+                    valid = response;
+                }
+            });
+            if (valid != "true") {
+                error += "&#9679 This Army No. not exist in Individual List. Add first in <b>ESM Records</b> <br>";
+                $('#ArmyNo').css('background-color', 'yellow');
+            }
         }
         if (Grievance_ReceptDate == "") {
             error += "&#9679 Enter Grievance Recept Date. <br>";

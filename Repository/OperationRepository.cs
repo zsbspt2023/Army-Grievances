@@ -42,13 +42,13 @@ namespace ArmyGrievances.Repository
             {
                 new SqlParameter("@ID",grievanceModal.Id),
                 new SqlParameter("@Individual_Particular",grievanceModal.Individual_Particular),
-                new SqlParameter("@ArmyNo",grievanceModal.ArmyNo),
-                new SqlParameter("@Name",grievanceModal.Name),
+                new SqlParameter("@ArmyNo",grievanceModal.ArmyNo?.Trim()),
+                new SqlParameter("@Name",grievanceModal.Name?.Trim()),
                 new SqlParameter("@Grievance_ReceptDate", grievanceModal.Grievance_ReceptDate),
-                new SqlParameter("@Grienvance_Subject", grievanceModal.Grienvance_Subject),
-                new SqlParameter("@Sent_Area", grievanceModal.Sent_Area),
+                new SqlParameter("@Grienvance_Subject", grievanceModal.Grienvance_Subject?.Trim()),
+                new SqlParameter("@Sent_Area", grievanceModal.Sent_Area?.Trim()),
                 new SqlParameter("@Regt_Record",grievanceModal.Regt_Record),
-                new SqlParameter("@ZSB_MemoNo",grievanceModal.ZSB_MemoNo),
+                new SqlParameter("@ZSB_MemoNo",grievanceModal.ZSB_MemoNo?.Trim()),
                 new SqlParameter("@ZSB_MemoDate",grievanceModal.ZSB_MemoDate),
                 new SqlParameter("@Action", grievanceModal.Action),
             };
@@ -163,13 +163,13 @@ namespace ArmyGrievances.Repository
             SqlParameter[] parameters = new SqlParameter[]
             {
                 new SqlParameter("@ID",individual.Id),
-                new SqlParameter("@Army_No",individual.Army_No),
-                new SqlParameter("@Rank", individual.Rank),
-                new SqlParameter("@Name", individual.Name),
-                new SqlParameter("@Address", individual.Address),
+                new SqlParameter("@Army_No",individual.Army_No?.Trim()),
+                new SqlParameter("@Rank", individual.Rank?.Trim()),
+                new SqlParameter("@Name", individual.Name?.Trim()),
+                new SqlParameter("@Address", individual.Address?.Trim()),
                 new SqlParameter("@Mobile_No",individual.Mobile_No),
-                new SqlParameter("@IdentityCardNo",individual.IdentityCardNo),
-                new SqlParameter("@VisitPurpose",individual.VisitPurpose),
+                new SqlParameter("@IdentityCardNo",individual.IdentityCardNo?.Trim()),
+                new SqlParameter("@VisitPurpose",individual.VisitPurpose?.Trim()),
                 new SqlParameter("@Action", individual.Action),
             };
             bool isInsert = await SqlHelper.ExecuteNonQueryAsync("Sp_IndividualManagement", CommandType.StoredProcedure, parameters, configuration);
@@ -192,7 +192,7 @@ namespace ArmyGrievances.Repository
             SqlParameter[] parameters = new SqlParameter[]
             {
                 new SqlParameter("@Army_No",certificate.Army_No),
-                new SqlParameter("@CertificateNo", certificate.Certificate_No),
+                new SqlParameter("@CertificateNo", certificate.Certificate_No?.Trim()),
                 new SqlParameter("@Date", certificate.Date),
                 new SqlParameter("@Action",3),
             };
@@ -223,7 +223,7 @@ namespace ArmyGrievances.Repository
                    new SqlParameter("@Month", grievance.Month),
                    new SqlParameter("@Year",grievance.Year),
                    new SqlParameter("@Regt_Records",grievance.Regt_Record),
-                   new SqlParameter("Army_No", grievance.ArmyNo),
+                   new SqlParameter("Army_No", grievance.ArmyNo?.Trim()),
                    new SqlParameter("@Id", grievance.Id)
             };
 
